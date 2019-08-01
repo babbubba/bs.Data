@@ -18,7 +18,7 @@ namespace bs.Data.Test
         }
 
         [TestMethod]
-        public void TestRepository()
+        public void TestRepositoryEntities()
         {
             IUnitOfWork uOW = CreateUnitOfWork();
             IRepository repository = new TestRepository(uOW);
@@ -60,6 +60,54 @@ namespace bs.Data.Test
 
             var entityAfterDelete = repository.GetById<TestEntityModel>(entity.Id);
             Assert.IsNull(entityAfterDelete); 
+            #endregion
+
+            uOW.Dispose();
+        }
+
+        [TestMethod]
+        public void TestRepositoryAuditableEntities()
+        {
+            IUnitOfWork uOW = CreateUnitOfWork();
+            IRepository repository = new TestRepository(uOW);
+
+            #region Create Entity
+            uOW.BeginTransaction();
+            var entityToCreate = new TestAuditableEntityModel
+            {
+                DateTimeValue = DateTime.Now,
+                IntValue = 1,
+                StringValue = "Test"
+            };
+            repository.Create<TestAuditableEntityModel>(entityToCreate);
+            uOW.Commit();
+
+
+            #endregion
+
+            #region Retrieve Entity
+            var entity = repository.GetById<TestAuditableEntityModel>(entityToCreate.Id);
+
+            Assert.IsNotNull(entity);
+            Assert.IsInstanceOfType(entity, typeof(TestAuditableEntityModel));
+            #endregion
+
+            #region Update Entity
+            uOW.BeginTransaction();
+            entity.IntValue = 2;
+            entity.StringValue = "edited";
+
+            repository.Update(entity);
+            uOW.Commit();
+            #endregion
+
+            #region Delete Entity
+            uOW.BeginTransaction();
+            repository.Delete<TestAuditableEntityModel>(entity.Id);
+            uOW.Commit();
+
+            var entityAfterDelete = repository.GetById<TestAuditableEntityModel>(entity.Id);
+            Assert.IsNull(entityAfterDelete);
             #endregion
 
             uOW.Dispose();

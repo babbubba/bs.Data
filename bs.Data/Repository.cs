@@ -41,8 +41,11 @@ namespace bs.Data
         /// <param name="entity">The entity to create in the database.</param>
         public void Create<T>(T entity) where T : IPersistentEntity
         {
-            _unitOfWork.Session.SaveOrUpdate(entity);
-            //FlushIfIsNotInTransaction();
+            if (typeof(IAuditableEntity).IsAssignableFrom(typeof(T)))
+            {
+                ((IAuditableEntity)entity).CreationDate = DateTime.Now;
+            }
+            _unitOfWork.Session.Save(entity);
         }
 
         /// <summary>Update the specified entity in the ORM Session (and in the DB after transaction will be committed).</summary>
@@ -50,8 +53,11 @@ namespace bs.Data
         /// <param name="entity">The entity to update in the database.</param>
         public void Update<T>(T entity) where T : IPersistentEntity
         {
+            if (typeof(IAuditableEntity).IsAssignableFrom(typeof(T)))
+            {
+                ((IAuditableEntity)entity).LastUpdateDate = DateTime.Now;
+            }
             _unitOfWork.Session.Update(entity);
-            //FlushIfIsNotInTransaction();
         }
 
         /// <summary>Deletes the Entity with specified identifier in the ORM Session (and in the DB after transaction will be committed).</summary>
@@ -60,7 +66,6 @@ namespace bs.Data
         public void Delete<T>(Guid id) where T : IPersistentEntity
         {
             _unitOfWork.Session.Delete(_unitOfWork.Session.Load<T>(id));
-            //FlushIfIsNotInTransaction();
         }
 
         //private void FlushIfIsNotInTransaction()

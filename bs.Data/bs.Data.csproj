@@ -6,8 +6,9 @@
     <Authors>Babbubba</Authors>
     <Company>bSoftBabbubba</Company>
     <Description>Nhibernate based Repository</Description>
-    <AssemblyVersion>1.19.8.1</AssemblyVersion>
-    <FileVersion>1.19.8.1</FileVersion>
+    <AssemblyVersion>1.19.08.0102</AssemblyVersion>
+    <FileVersion>1.19.08.0102</FileVersion>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
