@@ -4,11 +4,12 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Babbubba</Authors>
-    <Company>bSoftBabbubba</Company>
+    <Company>bSoft</Company>
     <Description>Nhibernate based Repository</Description>
     <AssemblyVersion>1.19.08.0102</AssemblyVersion>
     <FileVersion>1.19.08.0102</FileVersion>
     <Version>1.0.1</Version>
+    <Copyright>babbubba@bSoft</Copyright>
   </PropertyGroup>
 
   <ItemGroup>

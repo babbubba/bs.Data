@@ -4,20 +4,21 @@ using FluentNHibernate.Mapping;
 
 namespace bs.Data.Test
 {
-    public class TestEntityModel : IPersistentEntity
+    //public class TestEntityModel : IPersistentEntity
+    public class TestEntityModel : BaseEntity
     {
-        public virtual Guid Id { get; set ; }
+        //public virtual Guid Id { get; set ; }
         public virtual string StringValue { get; set ; }
         public virtual int IntValue { get; set ; }
         public virtual DateTime DateTimeValue { get; set ; }
     }
 
-    class TestEntityModelMap : ClassMap<TestEntityModel>
+    class TestEntityModelMap : SubclassMap<TestEntityModel>
     {
         public TestEntityModelMap()
         {
             Table("TestEntity");
-            Id(x => x.Id).GeneratedBy.GuidComb();
+            //Id(x => x.Id).GeneratedBy.GuidComb();
             Map(x => x.StringValue);
             Map(x => x.IntValue);
             Map(x => x.DateTimeValue);
