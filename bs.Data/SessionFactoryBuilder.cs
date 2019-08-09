@@ -15,10 +15,15 @@ namespace bs.Data
     /// <summary>The Session Factory Builder Class</summary>
     internal sealed class SessionFactoryBuilder
     {
-        /// <summary>Builds the Nhibernate Session Factory from the IDbContext implementation provided.</summary>
+        /// <summary>
+        /// Builds the Nhibernate Session Factory from the IDbContext implementation provided.
+        /// </summary>
         /// <param name="dbContext">The IDbContext implementation.</param>
-        /// <returns>The Nhibernate ISessionFactory.</returns>
+        /// <returns>
+        /// The Nhibernate ISessionFactory.
+        /// </returns>
         /// <exception cref="ApplicationException">Invalid connection string</exception>
+        /// <exception cref="ApplicationException">Not supported database engine type: ...</exception>
         public static NHibernate.ISessionFactory BuildSessionFactory(IDbContext dbContext)
         {
             NHibernate.ISessionFactory result;
@@ -67,8 +72,6 @@ namespace bs.Data
                     break;
                 default:
                     throw new ApplicationException($"Not supported database engine type: '{dbContext.DatabaseEngineType.ToLower()}'.");
-
-
             }
 
             return result;
