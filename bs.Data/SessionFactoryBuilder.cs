@@ -21,18 +21,57 @@ namespace bs.Data
         /// <exception cref="ApplicationException">Invalid connection string</exception>
         public static NHibernate.ISessionFactory BuildSessionFactory(IDbContext dbContext)
         {
+            NHibernate.ISessionFactory result;
+
             if (string.IsNullOrWhiteSpace(dbContext.ConnectionString))
-                throw new ApplicationException("Invalid connection string");
+                throw new ApplicationException("Invalid connection string.");
 
             var modelsAssemblies = ReflectionHelper.GetAssembliesFromFiles(dbContext.FoldersWhereLookingForEntitiesDll, dbContext.EntitiesFileNameScannerPatterns, dbContext.LookForEntitiesDllInCurrentDirectoryToo);
 
-            return Fluently.Configure()
-            .Database(SQLiteConfiguration.Standard
-            .ConnectionString(dbContext.ConnectionString))
-            .Mappings(m => MapAssemblies(modelsAssemblies, m))
-            .CurrentSessionContext("call")
-            .ExposeConfiguration(cfg => BuildSchema(cfg, dbContext.Create, dbContext.Update))
-            .BuildSessionFactory();
+            switch (dbContext.DatabaseEngineType.ToLower())
+            {
+                case "mysql":
+                    result = Fluently.Configure()
+                        .Database(MySQLConfiguration.Standard
+                        .ConnectionString(dbContext.ConnectionString))
+                        .Mappings(m => MapAssemblies(modelsAssemblies, m))
+                        .CurrentSessionContext("call")
+                        .ExposeConfiguration(cfg => BuildSchema(cfg, dbContext.Create, dbContext.Update))
+                        .BuildSessionFactory();
+                    break;
+                case "sqlite":
+                    result = Fluently.Configure()
+                        .Database(SQLiteConfiguration.Standard
+                        .ConnectionString(dbContext.ConnectionString))
+                        .Mappings(m => MapAssemblies(modelsAssemblies, m))
+                        .CurrentSessionContext("call")
+                        .ExposeConfiguration(cfg => BuildSchema(cfg, dbContext.Create, dbContext.Update))
+                        .BuildSessionFactory();
+                    break;
+                case "sql2012":
+                    result = Fluently.Configure()
+                        .Database(MsSqlConfiguration.MsSql2012
+                           .ConnectionString(dbContext.ConnectionString))
+                        .Mappings(m => MapAssemblies(modelsAssemblies, m))
+                        .CurrentSessionContext("call")
+                        .ExposeConfiguration(cfg => BuildSchema(cfg, dbContext.Create, dbContext.Update))
+                        .BuildSessionFactory();
+                    break;
+                case "sql20008":
+                    result = Fluently.Configure()
+                        .Database(MsSqlConfiguration.MsSql2008.ConnectionString(dbContext.ConnectionString))
+                        .Mappings(m => MapAssemblies(modelsAssemblies, m))
+                        .CurrentSessionContext("call")
+                        .ExposeConfiguration(cfg => BuildSchema(cfg, dbContext.Create, dbContext.Update))
+                        .BuildSessionFactory();
+                    break;
+                default:
+                    throw new ApplicationException($"Not supported database engine type: '{dbContext.DatabaseEngineType.ToLower()}'.");
+
+
+            }
+
+            return result;
         }
         /// <summary>
         /// Build the schema of the database creating or updating it.
