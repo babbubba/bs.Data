@@ -81,5 +81,18 @@ namespace bs.Data
             _unitOfWork.Session.Update(entity);
         }
 
+        /// <summary>
+        /// Restores logically the entity (the row field IsDeleted will setted to false and the value of the field DeletionDate 
+        /// is setted to null). This method is the opposite of 'DeleteLogically' method.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="entity">The entity.</param>
+        public void RestoreLogically<T>(T entity) where T : ILogicallyDeletableEntity
+        {
+            ((ILogicallyDeletableEntity)entity).DeletionDate = null;
+            ((ILogicallyDeletableEntity)entity).IsDeleted = false;
+            _unitOfWork.Session.Update(entity);
+        }
+
     }
 }
