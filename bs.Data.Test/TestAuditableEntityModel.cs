@@ -17,6 +17,9 @@ namespace bs.Data.Test
     {
         public TestAuditableEntityModelMap()
         {
+            // indicates that the base class is abstract
+            Abstract();
+
             Table("TestAuditableEntity");
             Map(x => x.StringValue);
             Map(x => x.IntValue);

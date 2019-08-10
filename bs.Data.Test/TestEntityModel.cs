@@ -17,6 +17,9 @@ namespace bs.Data.Test
     {
         public TestEntityModelMap()
         {
+            // indicates that the base class is abstract
+            Abstract();
+
             Table("TestEntity");
             //Id(x => x.Id).GeneratedBy.GuidComb();
             Map(x => x.StringValue);
