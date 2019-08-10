@@ -68,9 +68,18 @@ namespace bs.Data
             _unitOfWork.Session.Delete(_unitOfWork.Session.Load<T>(id));
         }
 
-        //private void FlushIfIsNotInTransaction()
-        //{
-        //    if (!_unitOfWork.Session.Transaction.IsActive) _unitOfWork.Session.Flush();
-        //}
+        /// <summary>
+        /// Deletes logically the entity (the row field IsDeleted will setted to true and the value of the field DeletionDate 
+        /// is setted to current date time).
+        /// </summary>
+        /// <typeparam name="T">The Entity Type that derives from ILogicallyDeletableEntity interface.</typeparam>
+        /// <param name="entity">The entity.</param>
+        public void DeleteLogically<T>(T entity) where T : ILogicallyDeletableEntity
+        {
+            ((ILogicallyDeletableEntity)entity).DeletionDate = DateTime.Now;
+            ((ILogicallyDeletableEntity)entity).IsDeleted = true;
+            _unitOfWork.Session.Update(entity);
+        }
+
     }
 }
