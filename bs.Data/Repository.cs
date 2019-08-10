@@ -36,6 +36,16 @@ namespace bs.Data
             return _unitOfWork.Session.Get<T>(id);
         }
 
+        /// <summary>Gets the entities by their identifiers.</summary>
+        /// <typeparam name="T">The Entities Type that derives from IPersisterEntity interface.</typeparam>
+        /// <param name="ids">The unique identifier array(primary key).</param>
+        /// <returns>The desired entities or null value.</returns>
+        public IEnumerable<T> GetByIds<T>(Guid[] ids) where T : IPersistentEntity
+        {
+            return _unitOfWork.Session.Query<T>().Where(e=> ids.Contains(e.Id));
+        }
+
+
         /// <summary>Creates the specified entity in the ORM Session (and in the DB after transaction will be committed).</summary>
         /// <typeparam name="T">The Entity Type that derives from IPersisterEntity interface.</typeparam>
         /// <param name="entity">The entity to create in the database.</param>
