@@ -62,7 +62,7 @@ namespace bs.Data
                         .ExposeConfiguration(cfg => BuildSchema(cfg, dbContext.Create, dbContext.Update))
                         .BuildSessionFactory();
                     break;
-                case "sql20008":
+                case "sql2008":
                     result = Fluently.Configure()
                         .Database(MsSqlConfiguration.MsSql2008.ConnectionString(dbContext.ConnectionString))
                         .Mappings(m => MapAssemblies(modelsAssemblies, m))
@@ -71,7 +71,7 @@ namespace bs.Data
                         .BuildSessionFactory();
                     break;
                 default:
-                    throw new ApplicationException($"Not supported database engine type: '{dbContext.DatabaseEngineType.ToLower()}'.");
+                    throw new ApplicationException($"Not supported database engine type: '{dbContext.DatabaseEngineType.ToLower()}'.\nAvaible values are: 'mysql', 'sqlite', 'sql2012', 'sql2008'.");
             }
 
             return result;
