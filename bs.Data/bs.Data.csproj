@@ -8,7 +8,7 @@
     <Description>Nhibernate based Repository</Description>
     <AssemblyVersion>1.19.08.13</AssemblyVersion>
     <FileVersion>1.19.08.13</FileVersion>
-    <Version>1.0.5</Version>
+    <Version>1.0.12</Version>
     <Copyright>Fabio Cavallari @ bSoft</Copyright>
     <PackageProjectUrl>https://github.com/babbubba/bs.Data</PackageProjectUrl>
     <RepositoryUrl>https://github.com/babbubba/bs.Data</RepositoryUrl>

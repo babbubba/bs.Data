@@ -32,7 +32,7 @@ namespace bs.Data
             if (string.IsNullOrWhiteSpace(dbContext.ConnectionString))
                 throw new ApplicationException("Invalid connection string.");
 
-            var modelsAssemblies = ReflectionHelper.GetAssembliesFromFiles(dbContext.FoldersWhereLookingForEntitiesDll, dbContext.EntitiesFileNameScannerPatterns, dbContext.LookForEntitiesDllInCurrentDirectoryToo);
+            var modelsAssemblies = ReflectionHelper.GetAssembliesFromFiles(dbContext.FoldersWhereLookingForEntitiesDll, dbContext.EntitiesFileNameScannerPatterns, dbContext.LookForEntitiesDllInCurrentDirectoryToo, dbContext.UseExecutingAssemblyToo);
 
             switch (dbContext.DatabaseEngineType.ToLower())
             {

@@ -11,6 +11,7 @@ namespace bs.Data.Interfaces
         string[] FoldersWhereLookingForEntitiesDll { get; set; }
         string[] EntitiesFileNameScannerPatterns { get; set; }
         bool LookForEntitiesDllInCurrentDirectoryToo { get; set; }
+        bool UseExecutingAssemblyToo { get; set; }
         bool Create { get; set; }
         bool Update { get; set; }
     }
