@@ -7,6 +7,7 @@ using NHibernate.Tool.hbm2ddl;
 using NHibernate.Util;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 
@@ -99,6 +100,7 @@ namespace bs.Data
         {
             foreach (var a in modelsAssemblies)
             {
+                Debug.WriteLine($"Mapping assembly '{a.GetName()}' to ORM.");
                 mappingConfig.FluentMappings.AddFromAssembly(a);
             }
         }

@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "bs.Data": {
+      "commandName": "Project",
+      "nativeDebugging": false
+    }
+  }
+}

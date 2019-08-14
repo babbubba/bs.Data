@@ -22,7 +22,7 @@ namespace bs.Data.Test
         public void TestRepositoryEntities_Sqlite()
         {
             IUnitOfWork uOW = CreateUnitOfWork_Sqlite();
-            IRepository repository = new TestRepository(uOW);
+            var repository = new TestRepository(uOW);
 
             #region Create Entity
             uOW.BeginTransaction();
@@ -70,7 +70,7 @@ namespace bs.Data.Test
         public void TestRepositoryAuditableEntities_Sqlite()
         {
             IUnitOfWork uOW = CreateUnitOfWork_Sqlite();
-            IRepository repository = new TestRepository(uOW);
+            var repository = new TestRepository(uOW);
 
             #region Create Entity
             uOW.BeginTransaction();
@@ -129,7 +129,7 @@ namespace bs.Data.Test
         public void TestRepositoryEntities_Mysql()
         {
             IUnitOfWork uOW = CreateUnitOfWork_Mysql();
-            IRepository repository = new TestRepository(uOW);
+            var repository = new TestRepository(uOW);
 
             #region Create Entity
             uOW.BeginTransaction();
@@ -177,7 +177,7 @@ namespace bs.Data.Test
         public void TestRepositoryAuditableEntities_Mysql()
         {
             IUnitOfWork uOW = CreateUnitOfWork_Mysql();
-            IRepository repository = new TestRepository(uOW);
+            var repository = new TestRepository(uOW);
 
             #region Create Entity
             uOW.BeginTransaction();

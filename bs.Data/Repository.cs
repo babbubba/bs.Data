@@ -22,7 +22,7 @@ namespace bs.Data
         /// <summary>Gets an IQueryable object representing all entities of the specified type.</summary>
         /// <typeparam name="T">The Entity Type that derives from IPersisterEntity interface.</typeparam>
         /// <returns>The IQueryable representing all entities of the specified 'T' Type.</returns>
-        public IQueryable<T> GetAll<T>() where T : IPersistentEntity
+        protected IQueryable<T> GetAll<T>() where T : IPersistentEntity
         {
             return _unitOfWork.Session.Query<T>();
         }
@@ -31,7 +31,7 @@ namespace bs.Data
         /// <typeparam name="T">The Entity Type that derives from IPersisterEntity interface.</typeparam>
         /// <param name="id">The unique identifier (primary key).</param>
         /// <returns>The desired entity or null value.</returns>
-        public T GetById<T>(Guid id) where T : IPersistentEntity
+        protected T GetById<T>(Guid id) where T : IPersistentEntity
         {
             return _unitOfWork.Session.Get<T>(id);
         }
@@ -40,7 +40,7 @@ namespace bs.Data
         /// <typeparam name="T">The Entities Type that derives from IPersisterEntity interface.</typeparam>
         /// <param name="ids">The unique identifier array(primary key).</param>
         /// <returns>The desired entities or null value.</returns>
-        public IEnumerable<T> GetByIds<T>(Guid[] ids) where T : IPersistentEntity
+        protected IEnumerable<T> GetByIds<T>(Guid[] ids) where T : IPersistentEntity
         {
             return _unitOfWork.Session.Query<T>().Where(e=> ids.Contains(e.Id));
         }
@@ -49,7 +49,7 @@ namespace bs.Data
         /// <summary>Creates the specified entity in the ORM Session (and in the DB after transaction will be committed).</summary>
         /// <typeparam name="T">The Entity Type that derives from IPersisterEntity interface.</typeparam>
         /// <param name="entity">The entity to create in the database.</param>
-        public void Create<T>(T entity) where T : IPersistentEntity
+        protected void Create<T>(T entity) where T : IPersistentEntity
         {
             if (typeof(IAuditableEntity).IsAssignableFrom(typeof(T)))
             {
@@ -61,7 +61,7 @@ namespace bs.Data
         /// <summary>Update the specified entity in the ORM Session (and in the DB after transaction will be committed).</summary>
         /// <typeparam name="T">The Entity Type that derives from IPersisterEntity interface.</typeparam>
         /// <param name="entity">The entity to update in the database.</param>
-        public void Update<T>(T entity) where T : IPersistentEntity
+        protected void Update<T>(T entity) where T : IPersistentEntity
         {
             if (typeof(IAuditableEntity).IsAssignableFrom(typeof(T)))
             {
@@ -73,7 +73,7 @@ namespace bs.Data
         /// <summary>Deletes the Entity with specified identifier in the ORM Session (and in the DB after transaction will be committed).</summary>
         /// <typeparam name="T">The Entity Type that derives from IPersisterEntity interface.</typeparam>
         /// <param name="id">The Entity unique identifier.</param>
-        public void Delete<T>(Guid id) where T : IPersistentEntity
+        protected void Delete<T>(Guid id) where T : IPersistentEntity
         {
             _unitOfWork.Session.Delete(_unitOfWork.Session.Load<T>(id));
         }
@@ -84,7 +84,7 @@ namespace bs.Data
         /// </summary>
         /// <typeparam name="T">The Entity Type that derives from ILogicallyDeletableEntity interface.</typeparam>
         /// <param name="entity">The entity.</param>
-        public void DeleteLogically<T>(T entity) where T : ILogicallyDeletableEntity
+        protected void DeleteLogically<T>(T entity) where T : ILogicallyDeletableEntity
         {
             ((ILogicallyDeletableEntity)entity).DeletionDate = DateTime.Now;
             ((ILogicallyDeletableEntity)entity).IsDeleted = true;
@@ -97,7 +97,7 @@ namespace bs.Data
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="entity">The entity.</param>
-        public void RestoreLogically<T>(T entity) where T : ILogicallyDeletableEntity
+        protected void RestoreLogically<T>(T entity) where T : ILogicallyDeletableEntity
         {
             ((ILogicallyDeletableEntity)entity).DeletionDate = null;
             ((ILogicallyDeletableEntity)entity).IsDeleted = false;

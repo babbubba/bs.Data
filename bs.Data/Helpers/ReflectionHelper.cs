@@ -57,12 +57,12 @@ namespace bs.Data.Helpers
                         
             var iPersistentEntityType = typeof(IPersistentEntity);
 
-            var enitiesAssemblies = from a in allAssemblies
+            var entitiesAssemblies = from a in allAssemblies
                                     from t in a.GetTypes()
                                     where iPersistentEntityType.IsAssignableFrom(t) && t.IsClass
                                     select a;
 
-            foreach (var assembly in enitiesAssemblies)
+            foreach (var assembly in entitiesAssemblies)
             {
                 if (!resultantAssemblies.ContainsKey(assembly.FullName)) resultantAssemblies.Add(assembly.FullName, assembly);
                 else resultantAssemblies[assembly.FullName] = assembly;
