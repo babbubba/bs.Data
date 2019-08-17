@@ -11,7 +11,7 @@ namespace bs.Data
     /// <seealso cref="bs.Data.Interfaces.IRepository"/>
     public abstract class Repository : IRepository
     {
-        private readonly IUnitOfWork _unitOfWork;
+        protected readonly IUnitOfWork _unitOfWork;
         /// <summary>Initializes a new instance of the <see cref="Repository"/> class.</summary>
         /// <param name="unitOfWork">The unit of work.</param>
         public Repository(IUnitOfWork unitOfWork)
