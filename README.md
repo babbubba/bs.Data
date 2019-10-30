@@ -44,6 +44,7 @@ Use Fluent Nhibernate to map your entities.
 
 ## BaseEntity
 Use BaseEntity class for normal entities. It implements Guid type Id field.
+
 Example:
 
     public class TestEntityModel : BaseEntity
@@ -68,7 +69,12 @@ Example:
     }
 
 ## BaseAuditableEntity
-Use BaseAuditableEntity class for auditable entities. It implements Guid type Id field and DateTime? type CreationDate and LastUpdateDate fields. The base repository will automatically populate this field on creation and on update.
+Use BaseAuditableEntity class for auditable entities. 
+
+It implements Guid type Id field and DateTime? type CreationDate and LastUpdateDate fields. 
+
+The base repository will automatically populate the fields on creation and on update.
+
 Example:
 
     public class TestAuditableEntityModel : BaseAuditableEntity
@@ -92,7 +98,8 @@ Example:
         }
     }
 
-# Example repository
+# Repository
+## Basic repository example
 
     public class TestRepository : Repository
     {
@@ -120,3 +127,43 @@ Example:
             base.Delete<T>(id);
         }
     }
+
+## Using Repository
+
+       public void TestRepositoryEntities()
+        {
+            IUnitOfWork uOW = CreateUnitOfWork(); //See the 'Configuration' chapter above...
+            var repository = new TestRepository(uOW); //See the 'Basic repository example' chapter above...
+
+            #region Create Entity
+            uOW.BeginTransaction();
+            var entityToCreate = new TestEntityModel
+            {
+                DateTimeValue = DateTime.Now,
+                IntValue = 1,
+                StringValue = "Test"
+            };
+            repository.Create<TestEntityModel>(entityToCreate);
+            uOW.Commit();
+            #endregion
+
+            #region Retrieve Entity
+            var entity = repository.GetById<TestEntityModel>(entityToCreate.Id);
+            #endregion
+
+            #region Update Entity
+            uOW.BeginTransaction();
+            entity.IntValue = 2;
+            entity.StringValue = "edited";
+            repository.Update(entity);
+            uOW.Commit();
+            #endregion
+
+            #region Delete Entity
+            uOW.BeginTransaction();
+            repository.Delete<TestEntityModel>(entity.Id);
+            uOW.Commit();
+            #endregion
+
+            uOW.Dispose();
+        }
