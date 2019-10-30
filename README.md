@@ -40,6 +40,7 @@ Example config for MySql database:
         }
 
 # Example repository
+
 public class TestRepository : Repository
     {
         public TestRepository(IUnitOfWork unitOfWork) : base(unitOfWork)
