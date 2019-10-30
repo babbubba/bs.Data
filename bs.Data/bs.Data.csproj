@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Fabio Cavallari</Authors>
     <Company>bSoft</Company>
     <Description>Nhibernate based Repository</Description>
-    <AssemblyVersion>1.19.08.17</AssemblyVersion>
-    <FileVersion>1.19.08.17</FileVersion>
-    <Version>1.1</Version>
+    <AssemblyVersion>1.19.10.30</AssemblyVersion>
+    <FileVersion>1.19.10.30</FileVersion>
+    <Version>1.2</Version>
     <Copyright>Fabio Cavallari @ bSoft</Copyright>
     <PackageProjectUrl>https://github.com/babbubba/bs.Data</PackageProjectUrl>
     <RepositoryUrl>https://github.com/babbubba/bs.Data</RepositoryUrl>
