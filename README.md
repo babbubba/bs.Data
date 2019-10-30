@@ -1,5 +1,5 @@
 # bs.Data
-Nhibernate based repository
+Nhibernate based repository using Fluent Nhibernate.
 
 # Configuration
 Example config for Sqlite database:
@@ -38,6 +38,30 @@ Example config for MySql database:
             var uOW = new UnitOfWork(dbContext);
             return uOW;
         }
+
+# Models (entities)
+Use Fluent Nhibernate to map your entities.
+
+    public class TestAuditableEntityModel : BaseAuditableEntity
+    {
+        public virtual string StringValue { get; set; }
+        public virtual int IntValue { get; set; }
+        public virtual DateTime DateTimeValue { get; set; }
+    }
+
+    class TestAuditableEntityModelMap : SubclassMap<TestAuditableEntityModel>
+    {
+        public TestAuditableEntityModelMap()
+        {
+            // indicates that the base class is abstract
+            Abstract();
+
+            Table("TestAuditableEntity");
+            Map(x => x.StringValue);
+            Map(x => x.IntValue);
+            Map(x => x.DateTimeValue);
+        }
+    }
 
 # Example repository
 
