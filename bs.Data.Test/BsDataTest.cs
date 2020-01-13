@@ -81,10 +81,9 @@ namespace bs.Data.Test
                 IntValue = 1,
                 StringValue = "Test"
             };
-            using (var transaction = uOW.BeginTransaction())
-            {
-                repository.Create<TestAuditableEntityModel>(entityToCreate);
-            }
+            repository.Create<TestAuditableEntityModel>(entityToCreate);
+            uOW.Commit();
+
 
             #endregion
 
@@ -244,7 +243,7 @@ namespace bs.Data.Test
                 DatabaseEngineType = "sqlite",
                 Create = true,
                 Update = true,
-                UseExecutingAssemblyToo = true
+                LookForEntitiesDllInCurrentDirectoryToo = true
             };
             var uOW = new UnitOfWork(dbContext);
             return uOW;
