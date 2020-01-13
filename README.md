@@ -136,15 +136,17 @@ Example:
             var repository = new TestRepository(uOW); //See the 'Basic repository example' chapter above...
 
             #region Create Entity
-            uOW.BeginTransaction();
             var entityToCreate = new TestEntityModel
             {
                 DateTimeValue = DateTime.Now,
                 IntValue = 1,
                 StringValue = "Test"
             };
-            repository.Create<TestEntityModel>(entityToCreate);
-            uOW.Commit();
+            using (var transaction = uOW.BeginTransaction())
+            {            
+                repository.Create<TestEntityModel>(entityToCreate);
+                // Transaction autocommit or rollback if exception occurs when disposed.
+            }
             #endregion
 
             #region Retrieve Entity
@@ -152,17 +154,17 @@ Example:
             #endregion
 
             #region Update Entity
-            uOW.BeginTransaction();
+            var transaction = uOW.BeginTransaction()
             entity.IntValue = 2;
             entity.StringValue = "edited";
             repository.Update(entity);
-            uOW.Commit();
+            uOW.Commit(transaction); // simply commit (it can rise exceptions)
             #endregion
 
             #region Delete Entity
-            uOW.BeginTransaction();
+            var transaction = uOW.BeginTransaction()
             repository.Delete<TestEntityModel>(entity.Id);
-            uOW.Commit();
+            uOW.TryCommitOrRollback(transaction); // It tries to commit but if error occurs it execute rollback
             #endregion
 
             uOW.Dispose();
