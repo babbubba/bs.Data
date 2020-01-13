@@ -70,7 +70,7 @@ namespace bs.Data.Helpers
             if (useExecutingAssemblyToo)
             {
                 var lst = new List<Assembly>();
-                lst.Add(Assembly.GetExecutingAssembly());
+                lst.AddRange(AppDomain.CurrentDomain.GetAssemblies().Where(a=> !a.FullName.Contains("Microsoft" )));
                 lst.AddRange(allAssemblies);
                 allAssemblies = lst;
             }

@@ -2,107 +2,165 @@
 using NHibernate;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace bs.Data
 {
-    /// <summary>The Unit Of Work used for transactional access to DB trough Repository</summary>
+    /// <summary>
+    /// The Unit Of Work used for transactional access to DB trough Repository
+    /// </summary>
     /// <seealso cref="bs.Data.Interfaces.IUnitOfWork" />
     /// <seealso cref="System.IDisposable" />
-    public sealed class UnitOfWork : IUnitOfWork, IDisposable
+    public sealed class UnitOfWork : IUnitOfWork
     {
-     
-        private bool disposedValue = false;
-        private ISessionFactory sessionFactory;
-        public ISession Session { get; set; }
-        private ITransaction transaction;
+        /// <summary>
+        /// The transactions dictionary
+        /// </summary>
+        private readonly Dictionary<Guid, NHibernate.ITransaction> transactions;
 
-        /// <summary>Initializes a new instance of the <see cref="UnitOfWork"/> class.</summary>
+        /// <summary>
+        /// The disposed value
+        /// </summary>
+        private bool disposedValue = false;
+
+        /// <summary>
+        /// The session factory
+        /// </summary>
+        private ISessionFactory sessionFactory;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UnitOfWork" /> class.
+        /// </summary>
         /// <param name="dbContext">The database context.</param>
         public UnitOfWork(IDbContext dbContext)
         {
             sessionFactory = SessionFactoryBuilder.BuildSessionFactory(dbContext);
             Session = sessionFactory.OpenSession();
+            transactions = new Dictionary<Guid, NHibernate.ITransaction>();
         }
 
-        /// <summary>Begins the transaction.</summary>
-        public void BeginTransaction()
+        /// <summary>
+        /// Gets or sets the ORM session.
+        /// </summary>
+        /// <value>
+        /// The session.
+        /// </value>
+        public ISession Session { get; set; }
+
+        /// <summary>
+        /// Begins the transaction.
+        /// </summary>
+        /// <returns></returns>
+        public Interfaces.ITransaction BeginTransaction()
         {
-            transaction = Session.BeginTransaction();
+            var result = new Transaction(this);
+            var newTransaction = Session.BeginTransaction();
+            transactions.Add(result.Id, newTransaction);
+            return result;
         }
 
-        /// <summary>Commits the transacion initialized in this instance.</summary>
-        public void Commit()
+        /// <summary>
+        /// Commits the specified transaction.
+        /// </summary>
+        /// <param name="transaction">The transaction.</param>
+        public void Commit(Interfaces.ITransaction transaction)
+        {
+            var existingTransaction = GetTransaction(transaction.Id);
+            if (existingTransaction != null && existingTransaction.IsActive)
+            {
+                existingTransaction.Commit();
+                existingTransaction.Dispose();
+                transactions.Remove(transaction.Id);
+            }
+        }
+
+        /// <summary>
+        /// Rollbacks the specified transaction.
+        /// </summary>
+        /// <param name="transaction">The transaction.</param>
+        public void Rollback(Interfaces.ITransaction transaction)
+        {
+            var existingTransaction = GetTransaction(transaction.Id);
+            if (existingTransaction != null && existingTransaction.IsActive)
+            {
+                existingTransaction.Rollback();
+                existingTransaction.Dispose();
+                transactions.Remove(transaction.Id);
+            }
+        }
+
+        /// <summary>
+        /// Tries the transaction's commit or rollback.
+        /// </summary>
+        /// <param name="transaction">The transaction.</param>
+        /// <exception cref="Exception">Error during data commit, transaction has been rolled back. See the inner exception for details.</exception>
+        public void TryCommitOrRollback(Interfaces.ITransaction transaction)
         {
             try
             {
-                // commit transaction if there is one active
-                if (transaction != null && transaction.IsActive)
-                    transaction.Commit();
+                Commit(transaction);
             }
-            catch
+            catch (Exception ex)
             {
-                // rollback if there was an exception
-                if (transaction != null && transaction.IsActive)
-                    transaction.Rollback();
-
-                throw;
-            }
-            finally
-            {
-                //Session.Dispose();
+                Rollback(transaction);
+                throw new Exception("Error during data commit, transaction has been rolled back. See the inner exception for details.", ex);
             }
         }
 
-        /// <summary>Rollbacks the transaction intialized in this instance.</summary>
-        public void Rollback()
+        /// <summary>
+        /// Gets the transaction.
+        /// </summary>
+        /// <param name="transactionId">The transaction identifier.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception">This transaction not exists in this Unit Of Work context.</exception>
+        private NHibernate.ITransaction GetTransaction(Guid transactionId)
         {
-            try
-            {
-                if (transaction != null && transaction.IsActive)
-                    transaction.Rollback();
-            }
-            finally
-            {
-                //Session.Dispose();
-            }
+            if (!transactions.ContainsKey(transactionId)) throw new Exception("This transaction not exists in this Unit Of Work context.");
+            return transactions[transactionId];
         }
 
         #region IDisposable Support
 
-        /// <summary>Releases resources.</summary>
-        /// <param name="disposing">
-        ///   <c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        /// <summary>
+        /// Finalizes an instance of the <see cref="UnitOfWork" /> class.
+        /// </summary>
+        ~UnitOfWork()
+        {
+            Dispose(false);
+        }
+
+        /// <summary>
+        /// Releases resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         public void Dispose(bool disposing)
         {
             if (!disposedValue)
             {
                 if (disposing)
                 {
-                    if (transaction != null && transaction.IsActive) transaction.Rollback();
+                    foreach (var transaction in transactions)
+                    {
+                        if (transaction.Value != null && transaction.Value.IsActive) transaction.Value.Rollback();
+                    }
                     if (Session != null && Session.IsOpen) Session.Close();
                 }
 
                 if (Session != null) Session.Dispose();
-                transaction = null;
                 Session = null;
                 sessionFactory = null;
                 disposedValue = true;
             }
         }
 
-        /// <summary>Finalizes an instance of the <see cref="UnitOfWork"/> class.</summary>
-        ~UnitOfWork()
-        {
-            Dispose(false);
-        }
-
-        /// <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        #endregion
+
+        #endregion IDisposable Support
     }
 }

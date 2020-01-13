@@ -13,8 +13,8 @@ namespace bs.Data.Test
         public void TestUnitOfWork_Sqlite()
         {
             IUnitOfWork uOW = CreateUnitOfWork_Sqlite();
-            uOW.BeginTransaction();
-            uOW.Commit();
+            var t =uOW.BeginTransaction();
+            uOW.Commit(t);
             uOW.Dispose();
         }
 
@@ -25,16 +25,16 @@ namespace bs.Data.Test
             var repository = new TestRepository(uOW);
 
             #region Create Entity
-            uOW.BeginTransaction();
             var entityToCreate = new TestEntityModel
             {
                 DateTimeValue = DateTime.Now,
                 IntValue = 1,
                 StringValue = "Test"
             };
-            repository.Create<TestEntityModel>(entityToCreate);
-            uOW.Commit();
-
+            using (var transaction = uOW.BeginTransaction())
+            {
+                repository.Create<TestEntityModel>(entityToCreate);
+            }
 
             #endregion
 
@@ -46,18 +46,20 @@ namespace bs.Data.Test
             #endregion
 
             #region Update Entity
-            uOW.BeginTransaction();
-            entity.IntValue = 2;
-            entity.StringValue = "edited";
+            using (var transaction = uOW.BeginTransaction())
+            {
+                entity.IntValue = 2;
+                entity.StringValue = "edited";
 
-            repository.Update(entity);
-            uOW.Commit();
+                repository.Update(entity);
+            }
             #endregion
 
             #region Delete Entity
-            uOW.BeginTransaction();
-            repository.Delete<TestEntityModel>(entity.Id);
-            uOW.Commit();
+            using (var transaction = uOW.BeginTransaction())
+            {
+                repository.Delete<TestEntityModel>(entity.Id);
+            }
 
             var entityAfterDelete = repository.GetById<TestEntityModel>(entity.Id);
             Assert.IsNull(entityAfterDelete);
@@ -73,16 +75,16 @@ namespace bs.Data.Test
             var repository = new TestRepository(uOW);
 
             #region Create Entity
-            uOW.BeginTransaction();
             var entityToCreate = new TestAuditableEntityModel
             {
                 DateTimeValue = DateTime.Now,
                 IntValue = 1,
                 StringValue = "Test"
             };
-            repository.Create<TestAuditableEntityModel>(entityToCreate);
-            uOW.Commit();
-
+            using (var transaction = uOW.BeginTransaction())
+            {
+                repository.Create<TestAuditableEntityModel>(entityToCreate);
+            }
 
             #endregion
 
@@ -94,18 +96,20 @@ namespace bs.Data.Test
             #endregion
 
             #region Update Entity
-            uOW.BeginTransaction();
-            entity.IntValue = 2;
-            entity.StringValue = "edited";
+            using (var transaction = uOW.BeginTransaction())
+            {
+                entity.IntValue = 2;
+                entity.StringValue = "edited";
 
-            repository.Update(entity);
-            uOW.Commit();
+                repository.Update(entity);
+            }
             #endregion
 
             #region Delete Entity
-            uOW.BeginTransaction();
-            repository.Delete<TestAuditableEntityModel>(entity.Id);
-            uOW.Commit();
+            using (var transaction = uOW.BeginTransaction())
+            {
+                repository.Delete<TestAuditableEntityModel>(entity.Id);
+            }
 
             var entityAfterDelete = repository.GetById<TestAuditableEntityModel>(entity.Id);
             Assert.IsNull(entityAfterDelete);
@@ -230,7 +234,9 @@ namespace bs.Data.Test
                 DatabaseEngineType = "sqlite",
                 Create = true,
                 Update = true,
-                LookForEntitiesDllInCurrentDirectoryToo = true
+                //LookForEntitiesDllInCurrentDirectoryToo = true,
+                //EntitiesFileNameScannerPatterns = new string[] { "bs.Data.*.dll" },
+                UseExecutingAssemblyToo = true
             };
             var uOW = new UnitOfWork(dbContext);
             return uOW;
