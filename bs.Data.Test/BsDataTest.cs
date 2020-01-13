@@ -81,8 +81,10 @@ namespace bs.Data.Test
                 IntValue = 1,
                 StringValue = "Test"
             };
-            repository.Create<TestAuditableEntityModel>(entityToCreate);
-            uOW.Commit();
+            using (var transaction = uOW.BeginTransaction())
+            {
+                repository.Create<TestAuditableEntityModel>(entityToCreate);
+            }
 
 
             #endregion
