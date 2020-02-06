@@ -1,6 +1,9 @@
 # bs.Data
 Nhibernate based repository using Fluent Nhibernate.
 
+# Install
+### Nuget
+     Install-Package bs.Data -Version 2.0.0
 # Configuration
 Example config for Sqlite database:
 
