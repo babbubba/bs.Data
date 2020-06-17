@@ -34,9 +34,10 @@ namespace bs.Data
 
             var modelsAssemblies = ReflectionHelper.GetAssembliesFromFiles(dbContext.FoldersWhereLookingForEntitiesDll, dbContext.EntitiesFileNameScannerPatterns, dbContext.LookForEntitiesDllInCurrentDirectoryToo, dbContext.UseExecutingAssemblyToo);
 
-            switch (dbContext.DatabaseEngineType.ToLower())
+            //switch (dbContext.DatabaseEngineType.ToLower())
+            switch (dbContext.DatabaseEngineType)
             {
-                case "mysql":
+                case DbType.MySQL:
                     result = Fluently.Configure()
                         .Database(MySQLConfiguration.Standard
                         .ConnectionString(dbContext.ConnectionString))
@@ -45,7 +46,7 @@ namespace bs.Data
                         .ExposeConfiguration(cfg => BuildSchema(cfg, dbContext.Create, dbContext.Update))
                         .BuildSessionFactory();
                     break;
-                case "sqlite":
+                case DbType.SQLite:
                     result = Fluently.Configure()
                         .Database(SQLiteConfiguration.Standard
                         .ConnectionString(dbContext.ConnectionString))
@@ -54,7 +55,7 @@ namespace bs.Data
                         .ExposeConfiguration(cfg => BuildSchema(cfg, dbContext.Create, dbContext.Update))
                         .BuildSessionFactory();
                     break;
-                case "sql2012":
+                case DbType.MsSql2012:
                     result = Fluently.Configure()
                         .Database(MsSqlConfiguration.MsSql2012
                            .ConnectionString(dbContext.ConnectionString))
@@ -63,7 +64,7 @@ namespace bs.Data
                         .ExposeConfiguration(cfg => BuildSchema(cfg, dbContext.Create, dbContext.Update))
                         .BuildSessionFactory();
                     break;
-                case "sql2008":
+                case DbType.MsSql2008:
                     result = Fluently.Configure()
                         .Database(MsSqlConfiguration.MsSql2008.ConnectionString(dbContext.ConnectionString))
                         .Mappings(m => MapAssemblies(modelsAssemblies, m))
@@ -71,8 +72,16 @@ namespace bs.Data
                         .ExposeConfiguration(cfg => BuildSchema(cfg, dbContext.Create, dbContext.Update))
                         .BuildSessionFactory();
                     break;
+                case DbType.PostgreSQL:
+                    result = Fluently.Configure()
+                        .Database(PostgreSQLConfiguration.Standard.ConnectionString(dbContext.ConnectionString))
+                        .Mappings(m => MapAssemblies(modelsAssemblies, m))
+                        .CurrentSessionContext("call")
+                        .ExposeConfiguration(cfg => BuildSchema(cfg, dbContext.Create, dbContext.Update))
+                        .BuildSessionFactory();
+                    break;
                 default:
-                    throw new ApplicationException($"Not supported database engine type: '{dbContext.DatabaseEngineType.ToLower()}'.\nAvaible values are: 'mysql', 'sqlite', 'sql2012', 'sql2008'.");
+                    throw new ApplicationException($"Not supported database engine type: '{dbContext.DatabaseEngineType.ToString()}'.\nAvaible values are: 'mysql', 'sqlite', 'sql2012', 'sql2008'.");
             }
 
             return result;

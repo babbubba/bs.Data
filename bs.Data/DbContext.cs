@@ -12,7 +12,8 @@ namespace bs.Data
             UseExecutingAssemblyToo = true;
         }
         public string ConnectionString {get;set;}
-        public string DatabaseEngineType { get; set; }
+        //public string DatabaseEngineType { get; set; }
+        public DbType DatabaseEngineType { get; set; }
         public string[] FoldersWhereLookingForEntitiesDll {get;set;}
         public string[] EntitiesFileNameScannerPatterns {get;set;}
         public bool LookForEntitiesDllInCurrentDirectoryToo {get;set;}

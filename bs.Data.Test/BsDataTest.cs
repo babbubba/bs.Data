@@ -242,10 +242,12 @@ namespace bs.Data.Test
             var dbContext = new DbContext
             {
                 ConnectionString = "Data Source=.\\bs.Data.Test.db;Version=3;BinaryGuid=False;",
-                DatabaseEngineType = "sqlite",
+                //DatabaseEngineType = "sqlite",
+                DatabaseEngineType = DbType.SQLite,
                 Create = true,
                 Update = true,
-                LookForEntitiesDllInCurrentDirectoryToo = true
+                LookForEntitiesDllInCurrentDirectoryToo = false,
+                 
             };
             var uOW = new UnitOfWork(dbContext);
             return uOW;
@@ -261,7 +263,8 @@ namespace bs.Data.Test
             var dbContext = new DbContext
             {
                 ConnectionString = $"Server={server_ip};Port={server_port};Database={database_name};Uid={db_user_name};Pwd={db_user_password};SslMode=none",
-                DatabaseEngineType = "mysql",
+                //DatabaseEngineType = "mysql",
+                DatabaseEngineType = DbType.MySQL,
                 Create = true,
                 Update = true,
                 UseExecutingAssemblyToo = true
