@@ -30,5 +30,5 @@ namespace bs.Data.Test
             base.Delete<T>(id);
         }
     }
-  
+
 }

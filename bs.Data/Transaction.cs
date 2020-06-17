@@ -9,7 +9,7 @@ namespace bs.Data
     /// <summary>
     /// Handle a session's ORM transaction. It support IDisposable that auto commit or rollback transaction.
     /// </summary>
-    /// <seealso cref="bs.Data.Interfaces.ITransaction" />
+    /// <seealso cref="bs.Data.Interfaces.IAsyncTransaction" />
     public class Transaction : ITransaction
     {
         /// <summary>
