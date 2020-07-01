@@ -5,10 +5,11 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Fabio Cavallari</Authors>
     <Company>bSoft</Company>
-    <Description>Nhibernate based Repository</Description>
-    <AssemblyVersion>1.20.1.14</AssemblyVersion>
-    <FileVersion>1.20.1.14</FileVersion>
-    <Version>2.1.1</Version>
+    <Description>Nhibernate based Repository with facilities.
+Supports: SqlServer, MySql, Sqlite</Description>
+    <AssemblyVersion>1.20.7.01</AssemblyVersion>
+    <FileVersion>1.20.7.01</FileVersion>
+    <Version>2.1.2</Version>
     <Copyright>Fabio Cavallari @ bSoft</Copyright>
     <PackageProjectUrl>https://github.com/babbubba/bs.Data</PackageProjectUrl>
     <RepositoryUrl>https://github.com/babbubba/bs.Data</RepositoryUrl>
@@ -29,6 +30,7 @@
   <ItemGroup>
     <PackageReference Include="FluentNHibernate" Version="2.1.2" />
     <PackageReference Include="MySql.Data" Version="8.0.20" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.1" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.113.1" />
   </ItemGroup>
 
