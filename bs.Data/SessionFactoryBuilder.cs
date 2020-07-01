@@ -3,6 +3,7 @@ using bs.Data.Interfaces;
 using FluentNHibernate.Cfg;
 using FluentNHibernate.Cfg.Db;
 using NHibernate.Cfg;
+using NHibernate.Dialect;
 using NHibernate.Tool.hbm2ddl;
 using NHibernate.Util;
 using System;
@@ -74,7 +75,9 @@ namespace bs.Data
                     break;
                 case DbType.PostgreSQL:
                     result = Fluently.Configure()
-                        .Database(PostgreSQLConfiguration.Standard.ConnectionString(dbContext.ConnectionString))
+                        .Database(PostgreSQLConfiguration.Standard
+                            .ConnectionString(dbContext.ConnectionString)
+                            .Dialect<PostgreSQL82Dialect>())
                         .Mappings(m => MapAssemblies(modelsAssemblies, m))
                         .CurrentSessionContext("call")
                         .ExposeConfiguration(cfg => BuildSchema(cfg, dbContext.Create, dbContext.Update))

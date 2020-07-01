@@ -237,6 +237,74 @@ namespace bs.Data.Test
         }
 
         #endregion
+
+        #region PostgreeSql
+
+        [TestMethod]
+        public void TestUnitOfWork_PostgreeSql()
+        {
+            IUnitOfWork uOW = CreateUnitOfWork_PostgreeSql();
+            using (var transaction = uOW.BeginTransaction())
+            {
+
+            }
+            uOW.Dispose();
+        }
+
+        [TestMethod]
+        public void TestRepositoryEntities_PostgreeSql()
+        {
+            IUnitOfWork uOW = CreateUnitOfWork_PostgreeSql();
+            var repository = new TestRepository(uOW);
+
+            #region Create Entity
+
+            var entityToCreate = new TestEntityModel
+            {
+                DateTimeValue = DateTime.Now,
+                IntValue = 1,
+                StringValue = "Test"
+            };
+            using (var transaction = uOW.BeginTransaction())
+            {
+                repository.Create<TestEntityModel>(entityToCreate);
+            }
+
+
+            #endregion
+
+            #region Retrieve Entity
+            var entity = repository.GetById<TestEntityModel>(entityToCreate.Id);
+
+            Assert.IsNotNull(entity);
+            Assert.IsInstanceOfType(entity, typeof(TestEntityModel));
+            #endregion
+
+            #region Update Entity
+            using (var transaction = uOW.BeginTransaction())
+            {
+                entity.IntValue = 2;
+                entity.StringValue = "edited";
+
+                repository.Update(entity);
+            }
+            #endregion
+
+            #region Delete Entity
+            using (var transaction = uOW.BeginTransaction())
+            {
+                repository.Delete<TestEntityModel>(entity.Id);
+            }
+
+            var entityAfterDelete = repository.GetById<TestEntityModel>(entity.Id);
+            Assert.IsNull(entityAfterDelete);
+            #endregion
+
+            uOW.Dispose();
+        }
+
+        #endregion
+
         private static IUnitOfWork CreateUnitOfWork_Sqlite()
         {
             var dbContext = new DbContext
@@ -268,6 +336,22 @@ namespace bs.Data.Test
                 Create = true,
                 Update = true,
                 UseExecutingAssemblyToo = true
+            };
+            var uOW = new UnitOfWork(dbContext);
+            return uOW;
+        }
+
+        private static IUnitOfWork CreateUnitOfWork_PostgreeSql()
+        {
+            var dbContext = new DbContext
+            {
+                ConnectionString = "User ID=postgres;Password=password;Host=localhost;Port=5432;Database=bsDataTestDb;Pooling=true;",
+                //DatabaseEngineType = "sqlite",
+                DatabaseEngineType = DbType.PostgreSQL,
+                Create = true,
+                Update = true,
+                LookForEntitiesDllInCurrentDirectoryToo = false,
+
             };
             var uOW = new UnitOfWork(dbContext);
             return uOW;

@@ -6,10 +6,10 @@
     <Authors>Fabio Cavallari</Authors>
     <Company>bSoft</Company>
     <Description>Nhibernate based Repository with facilities.
-Supports: SqlServer, MySql, Sqlite</Description>
+Supports: SqlServer, MySql, Sqlite, PostgreeSql</Description>
     <AssemblyVersion>1.20.7.01</AssemblyVersion>
     <FileVersion>1.20.7.01</FileVersion>
-    <Version>2.1.2</Version>
+    <Version>2.1.3</Version>
     <Copyright>Fabio Cavallari @ bSoft</Copyright>
     <PackageProjectUrl>https://github.com/babbubba/bs.Data</PackageProjectUrl>
     <RepositoryUrl>https://github.com/babbubba/bs.Data</RepositoryUrl>
@@ -30,6 +30,7 @@ Supports: SqlServer, MySql, Sqlite</Description>
   <ItemGroup>
     <PackageReference Include="FluentNHibernate" Version="2.1.2" />
     <PackageReference Include="MySql.Data" Version="8.0.20" />
+    <PackageReference Include="Npgsql" Version="4.1.3.1" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.1" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.113.1" />
   </ItemGroup>
