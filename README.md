@@ -3,7 +3,7 @@ Nhibernate based repository using Fluent Nhibernate.
 
 # Install
 ### Nuget
-     Install-Package bs.Data -Version 2.0.0
+     Install-Package bs.Data
 # Configuration
 Example config for Sqlite database:
 
@@ -35,8 +35,8 @@ Example config for MySql database:
             ConnectionString = $"Server={server_ip};Port={server_port};Database={database_name};Uid={db_user_name};Pwd={db_user_password};SslMode=none",
             DatabaseEngineType = "mysql",
             Create = true,
-             Update = true,
-             LookForEntitiesDllInCurrentDirectoryToo = true
+            Update = true,
+            LookForEntitiesDllInCurrentDirectoryToo = true
          };
          var uOW = new UnitOfWork(dbContext);
          return uOW;
