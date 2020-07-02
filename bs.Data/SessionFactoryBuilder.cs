@@ -2,6 +2,7 @@
 using bs.Data.Interfaces;
 using FluentNHibernate.Cfg;
 using FluentNHibernate.Cfg.Db;
+using NHibernate.AdoNet;
 using NHibernate.Cfg;
 using NHibernate.Dialect;
 using NHibernate.Tool.hbm2ddl;
@@ -35,7 +36,6 @@ namespace bs.Data
 
             var modelsAssemblies = ReflectionHelper.GetAssembliesFromFiles(dbContext.FoldersWhereLookingForEntitiesDll, dbContext.EntitiesFileNameScannerPatterns, dbContext.LookForEntitiesDllInCurrentDirectoryToo, dbContext.UseExecutingAssemblyToo);
 
-            //switch (dbContext.DatabaseEngineType.ToLower())
             switch (dbContext.DatabaseEngineType)
             {
                 case DbType.MySQL:
@@ -44,7 +44,15 @@ namespace bs.Data
                         .ConnectionString(dbContext.ConnectionString))
                         .Mappings(m => MapAssemblies(modelsAssemblies, m))
                         .CurrentSessionContext("call")
-                        .ExposeConfiguration(cfg => BuildSchema(cfg, dbContext.Create, dbContext.Update))
+                        .ExposeConfiguration(cfg =>
+                           {
+                               BuildSchema(cfg, dbContext.Create, dbContext.Update);
+                               cfg.DataBaseIntegration(prop =>
+                               {
+                                   prop.BatchSize = dbContext.SetBatchSize;
+                                   prop.Batcher<MySqlClientBatchingBatcherFactory>();
+                               });
+                           })
                         .BuildSessionFactory();
                     break;
                 case DbType.SQLite:
@@ -53,7 +61,16 @@ namespace bs.Data
                         .ConnectionString(dbContext.ConnectionString))
                         .Mappings(m => MapAssemblies(modelsAssemblies, m))
                         .CurrentSessionContext("call")
-                        .ExposeConfiguration(cfg => BuildSchema(cfg, dbContext.Create, dbContext.Update))
+                         .ExposeConfiguration(cfg =>
+                         {
+                             BuildSchema(cfg, dbContext.Create, dbContext.Update);
+                             cfg.DataBaseIntegration(prop =>
+                             {
+                                 prop.BatchSize = dbContext.SetBatchSize;
+                                 prop.Batcher<GenericBatchingBatcherFactory>();
+
+                             });
+                         })
                         .BuildSessionFactory();
                     break;
                 case DbType.MsSql2012:
@@ -62,7 +79,16 @@ namespace bs.Data
                            .ConnectionString(dbContext.ConnectionString))
                         .Mappings(m => MapAssemblies(modelsAssemblies, m))
                         .CurrentSessionContext("call")
-                        .ExposeConfiguration(cfg => BuildSchema(cfg, dbContext.Create, dbContext.Update))
+                         .ExposeConfiguration(cfg =>
+                         {
+                             BuildSchema(cfg, dbContext.Create, dbContext.Update);
+                             cfg.DataBaseIntegration(prop =>
+                             {
+                                 prop.BatchSize = dbContext.SetBatchSize;
+                                 prop.Batcher<GenericBatchingBatcherFactory>();
+
+                             });
+                         })
                         .BuildSessionFactory();
                     break;
                 case DbType.MsSql2008:
@@ -70,7 +96,16 @@ namespace bs.Data
                         .Database(MsSqlConfiguration.MsSql2008.ConnectionString(dbContext.ConnectionString))
                         .Mappings(m => MapAssemblies(modelsAssemblies, m))
                         .CurrentSessionContext("call")
-                        .ExposeConfiguration(cfg => BuildSchema(cfg, dbContext.Create, dbContext.Update))
+                        .ExposeConfiguration(cfg =>
+                        {
+                            BuildSchema(cfg, dbContext.Create, dbContext.Update);
+                            cfg.DataBaseIntegration(prop =>
+                            {
+                                prop.BatchSize = dbContext.SetBatchSize;
+                                prop.Batcher<GenericBatchingBatcherFactory>();
+
+                            });
+                        })
                         .BuildSessionFactory();
                     break;
                 case DbType.PostgreSQL:
@@ -80,7 +115,16 @@ namespace bs.Data
                             .Dialect<PostgreSQL82Dialect>())
                         .Mappings(m => MapAssemblies(modelsAssemblies, m))
                         .CurrentSessionContext("call")
-                        .ExposeConfiguration(cfg => BuildSchema(cfg, dbContext.Create, dbContext.Update))
+                        .ExposeConfiguration(cfg =>
+                        {
+                            BuildSchema(cfg, dbContext.Create, dbContext.Update);
+                            cfg.DataBaseIntegration(prop =>
+                            {
+                                prop.BatchSize = dbContext.SetBatchSize;
+                                prop.Batcher<GenericBatchingBatcherFactory>();
+
+                            });
+                        })
                         .BuildSessionFactory();
                     break;
                 default:

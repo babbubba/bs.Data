@@ -22,7 +22,17 @@ namespace bs.Data
         /// <summary>Gets an IQueryable object representing all entities of the specified type.</summary>
         /// <typeparam name="T">The Entity Type that derives from IPersisterEntity interface.</typeparam>
         /// <returns>The IQueryable representing all entities of the specified 'T' Type.</returns>
-        protected IQueryable<T> GetAll<T>() where T : IPersistentEntity
+        protected IList<T> GetAll<T>() where T : class,IPersistentEntity
+        {
+            return _unitOfWork.Session.CreateCriteria<T>().List<T>();
+        }
+
+        /// <summary>
+        /// Queries this instance.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        protected IQueryable<T> Query<T>() where T : IPersistentEntity
         {
             return _unitOfWork.Session.Query<T>();
         }
@@ -34,6 +44,17 @@ namespace bs.Data
         protected T GetById<T>(Guid id) where T : IPersistentEntity
         {
             return _unitOfWork.Session.Get<T>(id);
+        }
+
+        /// <summary>
+        /// Gets the entity by identifier not quering to DB but using cached.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        protected T GetByIdCached<T>(Guid id) where T : IPersistentEntity
+        {
+            return _unitOfWork.Session.Load<T>(id);
         }
 
         /// <summary>Gets the entities by their identifiers.</summary>

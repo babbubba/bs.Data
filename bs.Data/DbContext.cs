@@ -26,5 +26,6 @@ namespace bs.Data
         public bool UseExecutingAssemblyToo { get; set; }
         public bool Create {get;set;}
         public bool Update {get;set;}
-    }
+        public short SetBatchSize { get; set; }
+}
 }

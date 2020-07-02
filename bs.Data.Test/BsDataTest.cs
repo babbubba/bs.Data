@@ -315,6 +315,7 @@ namespace bs.Data.Test
                 Create = true,
                 Update = true,
                 LookForEntitiesDllInCurrentDirectoryToo = false,
+                SetBatchSize = 25
                  
             };
             var uOW = new UnitOfWork(dbContext);
@@ -335,7 +336,8 @@ namespace bs.Data.Test
                 DatabaseEngineType = DbType.MySQL,
                 Create = true,
                 Update = true,
-                UseExecutingAssemblyToo = true
+                UseExecutingAssemblyToo = true,
+                SetBatchSize = 25
             };
             var uOW = new UnitOfWork(dbContext);
             return uOW;
@@ -351,7 +353,7 @@ namespace bs.Data.Test
                 Create = true,
                 Update = true,
                 LookForEntitiesDllInCurrentDirectoryToo = false,
-
+                SetBatchSize = 25
             };
             var uOW = new UnitOfWork(dbContext);
             return uOW;

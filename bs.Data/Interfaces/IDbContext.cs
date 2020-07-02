@@ -15,5 +15,13 @@ namespace bs.Data.Interfaces
         bool UseExecutingAssemblyToo { get; set; }
         bool Create { get; set; }
         bool Update { get; set; }
+
+        /// <summary>
+        /// Gets or sets the size of concurrent call to database.
+        /// </summary>
+        /// <value>
+        /// The size of the set batch.
+        /// </value>
+        short SetBatchSize { get; set; }
     }
 }
