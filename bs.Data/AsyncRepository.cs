@@ -45,7 +45,6 @@
 //            return await _unitOfWork.Session.Query<T>().Where(e => ids.Contains(e.Id)).ToListAsync();
 //        }
 
-
 //        /// <summary>Creates the specified entity in the ORM Session (and in the DB after transaction will be committed).</summary>
 //        /// <typeparam name="T">The Entity Type that derives from IPersisterEntity interface.</typeparam>
 //        /// <param name="entity">The entity to create in the database.</param>
@@ -79,7 +78,7 @@
 //        }
 
 //        /// <summary>
-//        /// Deletes logically the entity (the row field IsDeleted will setted to true and the value of the field DeletionDate 
+//        /// Deletes logically the entity (the row field IsDeleted will setted to true and the value of the field DeletionDate
 //        /// is setted to current date time).
 //        /// </summary>
 //        /// <typeparam name="T">The Entity Type that derives from ILogicallyDeletableEntity interface.</typeparam>
@@ -92,7 +91,7 @@
 //        }
 
 //        /// <summary>
-//        /// Restores logically the entity (the row field IsDeleted will setted to false and the value of the field DeletionDate 
+//        /// Restores logically the entity (the row field IsDeleted will setted to false and the value of the field DeletionDate
 //        /// is setted to null). This method is the opposite of 'DeleteLogically' method.
 //        /// </summary>
 //        /// <typeparam name="T"></typeparam>

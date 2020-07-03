@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace bs.Data.Interfaces.BaseEntities
+﻿namespace bs.Data.Interfaces.BaseEntities
 {
     /// <summary>This interface is used to define 'enableable' entities.</summary>
     /// <seealso cref="bs.Data.Interfaces.BaseEntities.IPersistentEntity" />

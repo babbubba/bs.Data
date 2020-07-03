@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace bs.Data.Interfaces
 {
@@ -17,6 +15,7 @@ namespace bs.Data.Interfaces
         /// The identifier.
         /// </value>
         Guid Id { get; }
+
         /// <summary>
         /// Gets the parent uow.
         /// </summary>

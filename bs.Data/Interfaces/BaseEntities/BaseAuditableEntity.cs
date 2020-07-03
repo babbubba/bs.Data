@@ -1,7 +1,5 @@
 ﻿using FluentNHibernate.Mapping;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace bs.Data.Interfaces.BaseEntities
 {
@@ -17,7 +15,7 @@ namespace bs.Data.Interfaces.BaseEntities
         public BaseAuditableEntityMap()
         {
             // indicates that this class is the base
-            // one for the TPC inheritance strategy and that 
+            // one for the TPC inheritance strategy and that
             // the values of its properties should
             // be united with the values of derived classes
             UseUnionSubclassForInheritanceMapping();
@@ -25,7 +23,6 @@ namespace bs.Data.Interfaces.BaseEntities
             Id(x => x.Id).GeneratedBy.GuidComb();
             Map(x => x.CreationDate).Nullable();
             Map(x => x.LastUpdateDate).Nullable();
-
         }
     }
 }

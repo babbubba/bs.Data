@@ -1,11 +1,8 @@
 ﻿using bs.Data.Interfaces;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace bs.Data
 {
-
     /// <summary>
     /// Handle a session's ORM transaction. It support IDisposable that auto commit or rollback transaction.
     /// </summary>
@@ -21,6 +18,7 @@ namespace bs.Data
             ParentUow = uow;
             Id = Guid.NewGuid();
         }
+
         /// <summary>
         /// Gets the identifier.
         /// </summary>
@@ -28,6 +26,7 @@ namespace bs.Data
         /// The identifier.
         /// </value>
         public Guid Id { get; }
+
         /// <summary>
         /// Gets the parent uow.
         /// </summary>
@@ -37,6 +36,7 @@ namespace bs.Data
         public IUnitOfWork ParentUow { get; }
 
         #region IDisposable Support
+
         /// <summary>
         /// The disposed value
         /// </summary>
@@ -66,6 +66,7 @@ namespace bs.Data
         {
             Dispose(true);
         }
-        #endregion
+
+        #endregion IDisposable Support
     }
 }

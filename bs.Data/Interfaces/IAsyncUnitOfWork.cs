@@ -7,7 +7,7 @@
 //namespace bs.Data.Interfaces
 //{
 //    /// <summary>
-//    /// 
+//    ///
 //    /// </summary>
 //    /// <seealso cref="System.IDisposable" />
 //    public interface IAsyncUnitOfWork : IAsyncDisposable, IDisposable

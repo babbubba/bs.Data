@@ -96,7 +96,6 @@
 //                    await repository.Create<TestAuditableEntityModel>(entityToCreate);
 //                }
 
-
 //                #endregion
 
 //                #region Retrieve Entity
@@ -139,7 +138,6 @@
 //        //    IUnitOfWork uOW = CreateUnitOfWork_Mysql();
 //        //    using (var transaction = uOW.BeginTransaction())
 //        //    {
-
 //        //    }
 //        //    uOW.Dispose();
 //        //}
@@ -162,7 +160,6 @@
 //        //    {
 //        //        repository.Create<TestEntityModel>(entityToCreate);
 //        //    }
-
 
 //        //    #endregion
 
@@ -211,10 +208,8 @@
 //        //    #region Create Entity
 //        //    using (var transaction = uOW.BeginTransaction())
 //        //    {
-
 //        //        repository.Create<TestAuditableEntityModel>(entityToCreate);
 //        //    }
-
 
 //        //    #endregion
 

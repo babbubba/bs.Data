@@ -37,7 +37,7 @@ namespace bs.Data
             Session = sessionFactory.OpenSession();
             //if(dbContext.DatabaseEngineType == DbType.MsSql2008 || dbContext.DatabaseEngineType == DbType.MsSql2012)
             //Session.SetBatchSize((dbContext.SetBatchSize==0)?25: dbContext.SetBatchSize);
-            
+
             transactions = new Dictionary<Guid, NHibernate.ITransaction>();
         }
 

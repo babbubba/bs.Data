@@ -1,18 +1,18 @@
-﻿using System;
-using bs.Data.Interfaces.BaseEntities;
+﻿using bs.Data.Interfaces.BaseEntities;
 using FluentNHibernate.Mapping;
+using System;
 
 namespace bs.Data.Test
 {
     //public class TestEntityModel : IPersistentEntity
     public class TestEntityModel : BaseEntity
     {
-        public virtual string StringValue { get; set ; }
-        public virtual int IntValue { get; set ; }
-        public virtual DateTime DateTimeValue { get; set ; }
+        public virtual string StringValue { get; set; }
+        public virtual int IntValue { get; set; }
+        public virtual DateTime DateTimeValue { get; set; }
     }
 
-    class TestEntityModelMap : SubclassMap<TestEntityModel>
+    internal class TestEntityModelMap : SubclassMap<TestEntityModel>
     {
         public TestEntityModelMap()
         {

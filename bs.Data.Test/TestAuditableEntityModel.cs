@@ -1,6 +1,6 @@
-﻿using System;
-using bs.Data.Interfaces.BaseEntities;
+﻿using bs.Data.Interfaces.BaseEntities;
 using FluentNHibernate.Mapping;
+using System;
 
 namespace bs.Data.Test
 {
@@ -11,7 +11,7 @@ namespace bs.Data.Test
         public virtual DateTime DateTimeValue { get; set; }
     }
 
-    class TestAuditableEntityModelMap : SubclassMap<TestAuditableEntityModel>
+    internal class TestAuditableEntityModelMap : SubclassMap<TestAuditableEntityModel>
     {
         public TestAuditableEntityModelMap()
         {

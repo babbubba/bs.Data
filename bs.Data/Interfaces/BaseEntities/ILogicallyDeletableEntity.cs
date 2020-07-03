@@ -16,6 +16,7 @@ namespace bs.Data.Interfaces.BaseEntities
         ///   <c>true</c> if this instance is deleted; otherwise, <c>false</c>.
         /// </value>
         bool IsDeleted { get; set; }
+
         /// <summary>
         /// Gets or sets the deletion date.
         /// </summary>
@@ -23,6 +24,5 @@ namespace bs.Data.Interfaces.BaseEntities
         /// The deletion date.
         /// </value>
         DateTime? DeletionDate { get; set; }
-
     }
 }

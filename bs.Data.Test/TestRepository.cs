@@ -1,6 +1,6 @@
-﻿using System;
-using bs.Data.Interfaces;
+﻿using bs.Data.Interfaces;
 using bs.Data.Interfaces.BaseEntities;
+using System;
 
 namespace bs.Data.Test
 {
@@ -11,13 +11,13 @@ namespace bs.Data.Test
         }
 
         internal new void Create<T>(T entityToCreate) where T : IPersistentEntity
-        {         
-                base.Create<T>(entityToCreate);
+        {
+            base.Create<T>(entityToCreate);
         }
 
         internal new T GetById<T>(Guid id) where T : IPersistentEntity
         {
-           return base.GetById<T>(id);
+            return base.GetById<T>(id);
         }
 
         internal new void Update<T>(T entity) where T : IPersistentEntity
@@ -30,5 +30,4 @@ namespace bs.Data.Test
             base.Delete<T>(id);
         }
     }
-
 }

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace bs.Data.Interfaces.BaseEntities
 {
@@ -13,6 +11,7 @@ namespace bs.Data.Interfaces.BaseEntities
         /// <summary>Gets or sets the creation date.</summary>
         /// <value>The creation date.</value>
         DateTime? CreationDate { get; set; }
+
         /// <summary>Gets or sets the last update date.</summary>
         /// <value>The last update date.</value>
         DateTime? LastUpdateDate { get; set; }

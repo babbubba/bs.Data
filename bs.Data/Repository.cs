@@ -3,7 +3,6 @@ using bs.Data.Interfaces.BaseEntities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace bs.Data
 {
@@ -12,6 +11,7 @@ namespace bs.Data
     public abstract class Repository : IRepository
     {
         protected readonly IUnitOfWork _unitOfWork;
+
         /// <summary>Initializes a new instance of the <see cref="Repository"/> class.</summary>
         /// <param name="unitOfWork">The unit of work.</param>
         public Repository(IUnitOfWork unitOfWork)
@@ -19,16 +19,16 @@ namespace bs.Data
             _unitOfWork = unitOfWork;
         }
 
-        /// <summary>Gets an IQueryable object representing all entities of the specified type.</summary>
+        /// <summary>Gets a List of object representing all entities of the specified type.</summary>
         /// <typeparam name="T">The Entity Type that derives from IPersisterEntity interface.</typeparam>
         /// <returns>The IQueryable representing all entities of the specified 'T' Type.</returns>
-        protected IList<T> GetAll<T>() where T : class,IPersistentEntity
+        protected IList<T> GetAll<T>() where T : class, IPersistentEntity
         {
             return _unitOfWork.Session.CreateCriteria<T>().List<T>();
         }
 
         /// <summary>
-        /// Queries this instance.
+        /// Return the Queryable for the requested entity type.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
@@ -47,7 +47,7 @@ namespace bs.Data
         }
 
         /// <summary>
-        /// Gets the entity by identifier not quering to DB but using cached.
+        /// Gets the entity by identifier not quering to DB but using cached. (It will throw an exceprtion if entity doesnt exists):
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="id">The identifier.</param>
@@ -63,9 +63,8 @@ namespace bs.Data
         /// <returns>The desired entities or null value.</returns>
         protected IEnumerable<T> GetByIds<T>(Guid[] ids) where T : IPersistentEntity
         {
-            return _unitOfWork.Session.Query<T>().Where(e=> ids.Contains(e.Id));
+            return _unitOfWork.Session.Query<T>().Where(e => ids.Contains(e.Id));
         }
-
 
         /// <summary>Creates the specified entity in the ORM Session (and in the DB after transaction will be committed).</summary>
         /// <typeparam name="T">The Entity Type that derives from IPersisterEntity interface.</typeparam>
@@ -100,7 +99,7 @@ namespace bs.Data
         }
 
         /// <summary>
-        /// Deletes logically the entity (the row field IsDeleted will setted to true and the value of the field DeletionDate 
+        /// Deletes logically the entity (the row field IsDeleted will setted to true and the value of the field DeletionDate
         /// is setted to current date time).
         /// </summary>
         /// <typeparam name="T">The Entity Type that derives from ILogicallyDeletableEntity interface.</typeparam>
@@ -113,7 +112,7 @@ namespace bs.Data
         }
 
         /// <summary>
-        /// Restores logically the entity (the row field IsDeleted will setted to false and the value of the field DeletionDate 
+        /// Restores logically the entity (the row field IsDeleted will setted to false and the value of the field DeletionDate
         /// is setted to null). This method is the opposite of 'DeleteLogically' method.
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -124,6 +123,5 @@ namespace bs.Data
             ((ILogicallyDeletableEntity)entity).IsDeleted = false;
             _unitOfWork.Session.Update(entity);
         }
-
     }
 }

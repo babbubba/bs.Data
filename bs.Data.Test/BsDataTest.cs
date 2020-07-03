@@ -1,7 +1,6 @@
-using System;
 using bs.Data.Interfaces;
-using FluentNHibernate.Mapping;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 
 namespace bs.Data.Test
 {
@@ -9,11 +8,12 @@ namespace bs.Data.Test
     public class BsDataTest
     {
         #region Sqlite
+
         [TestMethod]
         public void TestUnitOfWork_Sqlite()
         {
             IUnitOfWork uOW = CreateUnitOfWork_Sqlite();
-            var t =uOW.BeginTransaction();
+            var t = uOW.BeginTransaction();
             uOW.Commit(t);
             uOW.Dispose();
         }
@@ -25,6 +25,7 @@ namespace bs.Data.Test
             var repository = new TestRepository(uOW);
 
             #region Create Entity
+
             var entityToCreate = new TestEntityModel
             {
                 DateTimeValue = DateTime.Now,
@@ -36,16 +37,19 @@ namespace bs.Data.Test
                 repository.Create<TestEntityModel>(entityToCreate);
             }
 
-            #endregion
+            #endregion Create Entity
 
             #region Retrieve Entity
+
             var entity = repository.GetById<TestEntityModel>(entityToCreate.Id);
 
             Assert.IsNotNull(entity);
             Assert.IsInstanceOfType(entity, typeof(TestEntityModel));
-            #endregion
+
+            #endregion Retrieve Entity
 
             #region Update Entity
+
             using (var transaction = uOW.BeginTransaction())
             {
                 entity.IntValue = 2;
@@ -53,9 +57,11 @@ namespace bs.Data.Test
 
                 repository.Update(entity);
             }
-            #endregion
+
+            #endregion Update Entity
 
             #region Delete Entity
+
             using (var transaction = uOW.BeginTransaction())
             {
                 repository.Delete<TestEntityModel>(entity.Id);
@@ -63,7 +69,8 @@ namespace bs.Data.Test
 
             var entityAfterDelete = repository.GetById<TestEntityModel>(entity.Id);
             Assert.IsNull(entityAfterDelete);
-            #endregion
+
+            #endregion Delete Entity
 
             uOW.Dispose();
         }
@@ -75,6 +82,7 @@ namespace bs.Data.Test
             var repository = new TestRepository(uOW);
 
             #region Create Entity
+
             var entityToCreate = new TestAuditableEntityModel
             {
                 DateTimeValue = DateTime.Now,
@@ -86,17 +94,19 @@ namespace bs.Data.Test
                 repository.Create<TestAuditableEntityModel>(entityToCreate);
             }
 
-
-            #endregion
+            #endregion Create Entity
 
             #region Retrieve Entity
+
             var entity = repository.GetById<TestAuditableEntityModel>(entityToCreate.Id);
 
             Assert.IsNotNull(entity);
             Assert.IsInstanceOfType(entity, typeof(TestAuditableEntityModel));
-            #endregion
+
+            #endregion Retrieve Entity
 
             #region Update Entity
+
             using (var transaction = uOW.BeginTransaction())
             {
                 entity.IntValue = 2;
@@ -104,9 +114,11 @@ namespace bs.Data.Test
 
                 repository.Update(entity);
             }
-            #endregion
+
+            #endregion Update Entity
 
             #region Delete Entity
+
             using (var transaction = uOW.BeginTransaction())
             {
                 repository.Delete<TestAuditableEntityModel>(entity.Id);
@@ -114,20 +126,22 @@ namespace bs.Data.Test
 
             var entityAfterDelete = repository.GetById<TestAuditableEntityModel>(entity.Id);
             Assert.IsNull(entityAfterDelete);
-            #endregion
+
+            #endregion Delete Entity
 
             uOW.Dispose();
         }
-        #endregion
+
+        #endregion Sqlite
 
         #region MySql
+
         [TestMethod]
         public void TestUnitOfWork_Mysql()
         {
             IUnitOfWork uOW = CreateUnitOfWork_Mysql();
             using (var transaction = uOW.BeginTransaction())
             {
-
             }
             uOW.Dispose();
         }
@@ -139,7 +153,7 @@ namespace bs.Data.Test
             var repository = new TestRepository(uOW);
 
             #region Create Entity
-            
+
             var entityToCreate = new TestEntityModel
             {
                 DateTimeValue = DateTime.Now,
@@ -151,17 +165,19 @@ namespace bs.Data.Test
                 repository.Create<TestEntityModel>(entityToCreate);
             }
 
-
-            #endregion
+            #endregion Create Entity
 
             #region Retrieve Entity
+
             var entity = repository.GetById<TestEntityModel>(entityToCreate.Id);
 
             Assert.IsNotNull(entity);
             Assert.IsInstanceOfType(entity, typeof(TestEntityModel));
-            #endregion
+
+            #endregion Retrieve Entity
 
             #region Update Entity
+
             using (var transaction = uOW.BeginTransaction())
             {
                 entity.IntValue = 2;
@@ -169,9 +185,11 @@ namespace bs.Data.Test
 
                 repository.Update(entity);
             }
-            #endregion
+
+            #endregion Update Entity
 
             #region Delete Entity
+
             using (var transaction = uOW.BeginTransaction())
             {
                 repository.Delete<TestEntityModel>(entity.Id);
@@ -179,7 +197,8 @@ namespace bs.Data.Test
 
             var entityAfterDelete = repository.GetById<TestEntityModel>(entity.Id);
             Assert.IsNull(entityAfterDelete);
-            #endregion
+
+            #endregion Delete Entity
 
             uOW.Dispose();
         }
@@ -196,24 +215,27 @@ namespace bs.Data.Test
                 IntValue = 1,
                 StringValue = "Test"
             };
+
             #region Create Entity
+
             using (var transaction = uOW.BeginTransaction())
             {
-                
                 repository.Create<TestAuditableEntityModel>(entityToCreate);
             }
 
-
-            #endregion
+            #endregion Create Entity
 
             #region Retrieve Entity
+
             var entity = repository.GetById<TestAuditableEntityModel>(entityToCreate.Id);
 
             Assert.IsNotNull(entity);
             Assert.IsInstanceOfType(entity, typeof(TestAuditableEntityModel));
-            #endregion
+
+            #endregion Retrieve Entity
 
             #region Update Entity
+
             using (var transaction = uOW.BeginTransaction())
             {
                 entity.IntValue = 2;
@@ -221,9 +243,11 @@ namespace bs.Data.Test
 
                 repository.Update(entity);
             }
-            #endregion
+
+            #endregion Update Entity
 
             #region Delete Entity
+
             using (var transaction = uOW.BeginTransaction())
             {
                 repository.Delete<TestAuditableEntityModel>(entity.Id);
@@ -231,12 +255,13 @@ namespace bs.Data.Test
 
             var entityAfterDelete = repository.GetById<TestAuditableEntityModel>(entity.Id);
             Assert.IsNull(entityAfterDelete);
-            #endregion
+
+            #endregion Delete Entity
 
             uOW.Dispose();
         }
 
-        #endregion
+        #endregion MySql
 
         #region PostgreeSql
 
@@ -246,7 +271,6 @@ namespace bs.Data.Test
             IUnitOfWork uOW = CreateUnitOfWork_PostgreeSql();
             using (var transaction = uOW.BeginTransaction())
             {
-
             }
             uOW.Dispose();
         }
@@ -270,17 +294,19 @@ namespace bs.Data.Test
                 repository.Create<TestEntityModel>(entityToCreate);
             }
 
-
-            #endregion
+            #endregion Create Entity
 
             #region Retrieve Entity
+
             var entity = repository.GetById<TestEntityModel>(entityToCreate.Id);
 
             Assert.IsNotNull(entity);
             Assert.IsInstanceOfType(entity, typeof(TestEntityModel));
-            #endregion
+
+            #endregion Retrieve Entity
 
             #region Update Entity
+
             using (var transaction = uOW.BeginTransaction())
             {
                 entity.IntValue = 2;
@@ -288,9 +314,11 @@ namespace bs.Data.Test
 
                 repository.Update(entity);
             }
-            #endregion
+
+            #endregion Update Entity
 
             #region Delete Entity
+
             using (var transaction = uOW.BeginTransaction())
             {
                 repository.Delete<TestEntityModel>(entity.Id);
@@ -298,12 +326,13 @@ namespace bs.Data.Test
 
             var entityAfterDelete = repository.GetById<TestEntityModel>(entity.Id);
             Assert.IsNull(entityAfterDelete);
-            #endregion
+
+            #endregion Delete Entity
 
             uOW.Dispose();
         }
 
-        #endregion
+        #endregion PostgreeSql
 
         private static IUnitOfWork CreateUnitOfWork_Sqlite()
         {
@@ -316,7 +345,6 @@ namespace bs.Data.Test
                 Update = true,
                 LookForEntitiesDllInCurrentDirectoryToo = false,
                 SetBatchSize = 25
-                 
             };
             var uOW = new UnitOfWork(dbContext);
             return uOW;
@@ -359,5 +387,4 @@ namespace bs.Data.Test
             return uOW;
         }
     }
-  
 }

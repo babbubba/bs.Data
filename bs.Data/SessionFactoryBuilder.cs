@@ -6,12 +6,10 @@ using NHibernate.AdoNet;
 using NHibernate.Cfg;
 using NHibernate.Dialect;
 using NHibernate.Tool.hbm2ddl;
-using NHibernate.Util;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
-using System.Text;
 
 namespace bs.Data
 {
@@ -43,7 +41,8 @@ namespace bs.Data
                         .Database(MySQLConfiguration.Standard
                         .ConnectionString(dbContext.ConnectionString))
                         .Mappings(m => MapAssemblies(modelsAssemblies, m))
-                        .CurrentSessionContext("call")
+                        //.CurrentSessionContext("call")
+                        .CurrentSessionContext(dbContext.SessionContext.ToString())
                         .ExposeConfiguration(cfg =>
                            {
                                BuildSchema(cfg, dbContext.Create, dbContext.Update);
@@ -55,12 +54,14 @@ namespace bs.Data
                            })
                         .BuildSessionFactory();
                     break;
+
                 case DbType.SQLite:
                     result = Fluently.Configure()
                         .Database(SQLiteConfiguration.Standard
                         .ConnectionString(dbContext.ConnectionString))
                         .Mappings(m => MapAssemblies(modelsAssemblies, m))
-                        .CurrentSessionContext("call")
+                        //.CurrentSessionContext("call")
+                        .CurrentSessionContext(dbContext.SessionContext.ToString())
                          .ExposeConfiguration(cfg =>
                          {
                              BuildSchema(cfg, dbContext.Create, dbContext.Update);
@@ -68,17 +69,18 @@ namespace bs.Data
                              {
                                  prop.BatchSize = dbContext.SetBatchSize;
                                  prop.Batcher<GenericBatchingBatcherFactory>();
-
                              });
                          })
                         .BuildSessionFactory();
                     break;
+
                 case DbType.MsSql2012:
                     result = Fluently.Configure()
                         .Database(MsSqlConfiguration.MsSql2012
                            .ConnectionString(dbContext.ConnectionString))
                         .Mappings(m => MapAssemblies(modelsAssemblies, m))
-                        .CurrentSessionContext("call")
+                        //.CurrentSessionContext("call")
+                        .CurrentSessionContext(dbContext.SessionContext.ToString())
                          .ExposeConfiguration(cfg =>
                          {
                              BuildSchema(cfg, dbContext.Create, dbContext.Update);
@@ -86,16 +88,17 @@ namespace bs.Data
                              {
                                  prop.BatchSize = dbContext.SetBatchSize;
                                  prop.Batcher<GenericBatchingBatcherFactory>();
-
                              });
                          })
                         .BuildSessionFactory();
                     break;
+
                 case DbType.MsSql2008:
                     result = Fluently.Configure()
                         .Database(MsSqlConfiguration.MsSql2008.ConnectionString(dbContext.ConnectionString))
                         .Mappings(m => MapAssemblies(modelsAssemblies, m))
-                        .CurrentSessionContext("call")
+                        //.CurrentSessionContext("call")
+                        .CurrentSessionContext(dbContext.SessionContext.ToString())
                         .ExposeConfiguration(cfg =>
                         {
                             BuildSchema(cfg, dbContext.Create, dbContext.Update);
@@ -103,18 +106,19 @@ namespace bs.Data
                             {
                                 prop.BatchSize = dbContext.SetBatchSize;
                                 prop.Batcher<GenericBatchingBatcherFactory>();
-
                             });
                         })
                         .BuildSessionFactory();
                     break;
+
                 case DbType.PostgreSQL:
                     result = Fluently.Configure()
                         .Database(PostgreSQLConfiguration.Standard
                             .ConnectionString(dbContext.ConnectionString)
                             .Dialect<PostgreSQL82Dialect>())
                         .Mappings(m => MapAssemblies(modelsAssemblies, m))
-                        .CurrentSessionContext("call")
+                        //.CurrentSessionContext("call")
+                        .CurrentSessionContext(dbContext.SessionContext.ToString())
                         .ExposeConfiguration(cfg =>
                         {
                             BuildSchema(cfg, dbContext.Create, dbContext.Update);
@@ -122,17 +126,18 @@ namespace bs.Data
                             {
                                 prop.BatchSize = dbContext.SetBatchSize;
                                 prop.Batcher<GenericBatchingBatcherFactory>();
-
                             });
                         })
                         .BuildSessionFactory();
                     break;
+
                 default:
                     throw new ApplicationException($"Not supported database engine type: '{dbContext.DatabaseEngineType.ToString()}'.\nAvaible values are: 'mysql', 'sqlite', 'sql2012', 'sql2008'.");
             }
 
             return result;
         }
+
         /// <summary>
         /// Build the schema of the database creating or updating it.
         /// </summary>

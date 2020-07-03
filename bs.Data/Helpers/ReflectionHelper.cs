@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace bs.Data.Helpers
@@ -30,8 +29,6 @@ namespace bs.Data.Helpers
             var candidateFiles = new List<string>();
             var resultantAssemblies = new Dictionary<string, Assembly>();
 
-       
-
             if (useCurrentdirectoryToo)
             {
                 currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
@@ -46,7 +43,6 @@ namespace bs.Data.Helpers
                 {
                     candidateFiles.AddRange(Directory.EnumerateFiles(folder, "*.dll", SearchOption.AllDirectories));
                     Debug.WriteLine($"Looking for dlls to map in extra folder (and sub folders): '{folder}'.");
-
                 }
             }
 
@@ -62,7 +58,6 @@ namespace bs.Data.Helpers
             Debug.WriteLine($"{dllsToLoad.Count()} dlls to map was filtered from candidates:");
             Debug.WriteLine($"- {string.Join("\n- ", dllsToLoad)}");
 
-
             var allAssemblies = dllsToLoad
                       .Select(Assembly.LoadFrom);
             Debug.WriteLine($"{allAssemblies.Count()} assemblies loaded from dlls.");
@@ -70,18 +65,17 @@ namespace bs.Data.Helpers
             if (useExecutingAssemblyToo)
             {
                 var lst = new List<Assembly>();
-                lst.AddRange(AppDomain.CurrentDomain.GetAssemblies().Where(a=> !a.FullName.Contains("Microsoft" )));
+                lst.AddRange(AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.FullName.Contains("Microsoft")));
                 lst.AddRange(allAssemblies);
                 allAssemblies = lst;
             }
 
-
             var iPersistentEntityType = typeof(IPersistentEntity);
 
             var entitiesAssemblies = (from a in allAssemblies
-                                    from t in a.GetTypes()
-                                     where iPersistentEntityType.IsAssignableFrom(t) && t.IsClass
-                                     select a).Distinct();
+                                      from t in a.GetTypes()
+                                      where iPersistentEntityType.IsAssignableFrom(t) && t.IsClass
+                                      select a).Distinct();
 
             Debug.WriteLine($"{entitiesAssemblies.Count()} assemblies implement IPersisterEntity interface.");
 
@@ -100,6 +94,5 @@ namespace bs.Data.Helpers
 
             return resultantAssemblies.Select(x => x.Value);
         }
-
     }
 }
