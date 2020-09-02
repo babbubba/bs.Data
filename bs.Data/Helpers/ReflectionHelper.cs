@@ -1,4 +1,4 @@
-﻿using bs.Data.Interfaces.BaseEntities;
+﻿using bs.Data.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -92,6 +92,7 @@ namespace bs.Data.Helpers
                 }
             }
 
+            Debug.WriteLine($"Assemblies mapped in ORM: " + string.Join(",", resultantAssemblies.Select(x => x.Value.FullName)));
             return resultantAssemblies.Select(x => x.Value);
         }
     }

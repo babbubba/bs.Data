@@ -1,44 +1,66 @@
 ﻿using NHibernate;
 using System;
+using System.Threading.Tasks;
 
 namespace bs.Data.Interfaces
 {
     /// <summary>
-    ///
+    /// Unit of work used to enable transactional access to database
     /// </summary>
+    /// <seealso cref="System.IAsyncDisposable" />
     /// <seealso cref="System.IDisposable" />
-    public interface IUnitOfWork : IDisposable
+
+    public interface IUnitOfWork : IAsyncDisposable, IDisposable
     {
         /// <summary>
-        /// Gets or sets the ORM session.
+        /// Gets the session.
         /// </summary>
         /// <value>
         /// The session.
         /// </value>
-        ISession Session { get; set; }
+        ISession Session { get; }
 
         /// <summary>
         /// Begins the transaction.
         /// </summary>
+        void BeginTransaction();
+
+        /// <summary>
+        /// Commits the last transaction in this session
+        /// </summary>
+        void Commit();
+
+        /// <summary>
+        /// Commits the last transaction in this session asynchronously.
+        /// </summary>
         /// <returns></returns>
-        ITransaction BeginTransaction();
+        Task CommitAsync();
 
         /// <summary>
-        /// Commits the specified transaction.
+        /// Rollbacks the last transaction in this session
         /// </summary>
-        /// <param name="transaction">The transaction.</param>
-        void Commit(ITransaction transaction);
+        void Rollback();
 
         /// <summary>
-        /// Tries the commit or rollback.
+        /// Rollbacks the last transaction in this session asynchronously.
         /// </summary>
-        /// <param name="transaction">The transaction.</param>
-        void TryCommitOrRollback(ITransaction transaction);
+        /// <returns></returns>
+        Task RollbackAsync();
 
         /// <summary>
-        /// Rollbacks the specified transaction.
+        /// Tries to commit the last transaction in this session if exception occurs rollback transaction.
         /// </summary>
-        /// <param name="transaction">The transaction.</param>
-        void Rollback(ITransaction transaction);
+        void TryCommitOrRollback();
+
+        /// <summary>
+        /// Tries to commit the last transaction in this session if exception occurs rollback transaction asynchronously.
+        /// </summary>
+        /// <returns></returns>
+        Task TryCommitOrRollbackAsync();
+
+        /// <summary>
+        /// Closes the transaction.
+        /// </summary>
+        void CloseTransaction();
     }
 }

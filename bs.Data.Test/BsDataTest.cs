@@ -1,4 +1,6 @@
+using bs.Data.Helpers;
 using bs.Data.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 
@@ -7,350 +9,65 @@ namespace bs.Data.Test
     [TestClass]
     public class BsDataTest
     {
+        private IServiceProvider serviceProvider;
+        private IServiceCollection services;
+
+        [TestInitialize]
+        public void Init()
+        {
+            services = new ServiceCollection();
+        }
+
         #region Sqlite
 
         [TestMethod]
-        public void TestUnitOfWork_Sqlite()
+        public void Test_Sqlite()
         {
-            IUnitOfWork uOW = CreateUnitOfWork_Sqlite();
-            var t = uOW.BeginTransaction();
-            uOW.Commit(t);
-            uOW.Dispose();
-        }
+            CreateUnitOfWork_Sqlite();
+            var uow = serviceProvider.GetService<IUnitOfWork>();
+            var repo = serviceProvider.GetService<BsDataRepository>();
 
-        [TestMethod]
-        public void TestRepositoryEntities_Sqlite()
-        {
-            IUnitOfWork uOW = CreateUnitOfWork_Sqlite();
-            var repository = new TestRepository(uOW);
+            BsDataEntityExample newEntity = null;
 
-            #region Create Entity
-
-            var entityToCreate = new TestEntityModel
+            uow.RunInTransaction(() =>
             {
-                DateTimeValue = DateTime.Now,
-                IntValue = 1,
-                StringValue = "Test"
-            };
-            using (var transaction = uOW.BeginTransaction())
-            {
-                repository.Create<TestEntityModel>(entityToCreate);
-            }
+                newEntity = new BsDataEntityExample
+                {
+                    MyBlobProperty = new byte[] { 10, 18, 1, 0, 46, 0, 251, 0 },
+                    MyDecimalProperty = 12.123M,
+                    MyDoubleProperty = 12.1234567890123456,
+                    MyGuidProperty = Guid.NewGuid(),
+                    MyBoolProperty = true,
+                    MyIntProperty = 123456,
+                    MyLongProperty = 1234567890123456789,
+                    MyStringProperty = "entità di prova!"
+                };
+                repo.CreateEntityExample(newEntity);
+            });
 
-            #endregion Create Entity
-
-            #region Retrieve Entity
-
-            var entity = repository.GetById<TestEntityModel>(entityToCreate.Id);
-
-            Assert.IsNotNull(entity);
-            Assert.IsInstanceOfType(entity, typeof(TestEntityModel));
-
-            #endregion Retrieve Entity
-
-            #region Update Entity
-
-            using (var transaction = uOW.BeginTransaction())
-            {
-                entity.IntValue = 2;
-                entity.StringValue = "edited";
-
-                repository.Update(entity);
-            }
-
-            #endregion Update Entity
-
-            #region Delete Entity
-
-            using (var transaction = uOW.BeginTransaction())
-            {
-                repository.Delete<TestEntityModel>(entity.Id);
-            }
-
-            var entityAfterDelete = repository.GetById<TestEntityModel>(entity.Id);
-            Assert.IsNull(entityAfterDelete);
-
-            #endregion Delete Entity
-
-            uOW.Dispose();
-        }
-
-        [TestMethod]
-        public void TestRepositoryAuditableEntities_Sqlite()
-        {
-            IUnitOfWork uOW = CreateUnitOfWork_Sqlite();
-            var repository = new TestRepository(uOW);
-
-            #region Create Entity
-
-            var entityToCreate = new TestAuditableEntityModel
-            {
-                DateTimeValue = DateTime.Now,
-                IntValue = 1,
-                StringValue = "Test"
-            };
-            using (var transaction = uOW.BeginTransaction())
-            {
-                repository.Create<TestAuditableEntityModel>(entityToCreate);
-            }
-
-            #endregion Create Entity
-
-            #region Retrieve Entity
-
-            var entity = repository.GetById<TestAuditableEntityModel>(entityToCreate.Id);
-
-            Assert.IsNotNull(entity);
-            Assert.IsInstanceOfType(entity, typeof(TestAuditableEntityModel));
-
-            #endregion Retrieve Entity
-
-            #region Update Entity
-
-            using (var transaction = uOW.BeginTransaction())
-            {
-                entity.IntValue = 2;
-                entity.StringValue = "edited";
-
-                repository.Update(entity);
-            }
-
-            #endregion Update Entity
-
-            #region Delete Entity
-
-            using (var transaction = uOW.BeginTransaction())
-            {
-                repository.Delete<TestAuditableEntityModel>(entity.Id);
-            }
-
-            var entityAfterDelete = repository.GetById<TestAuditableEntityModel>(entity.Id);
-            Assert.IsNull(entityAfterDelete);
-
-            #endregion Delete Entity
-
-            uOW.Dispose();
+            Assert.IsNotNull(newEntity.Id);
         }
 
         #endregion Sqlite
 
-        #region MySql
-
-        [TestMethod]
-        public void TestUnitOfWork_Mysql()
-        {
-            IUnitOfWork uOW = CreateUnitOfWork_Mysql();
-            using (var transaction = uOW.BeginTransaction())
-            {
-            }
-            uOW.Dispose();
-        }
-
-        [TestMethod]
-        public void TestRepositoryEntities_Mysql()
-        {
-            IUnitOfWork uOW = CreateUnitOfWork_Mysql();
-            var repository = new TestRepository(uOW);
-
-            #region Create Entity
-
-            var entityToCreate = new TestEntityModel
-            {
-                DateTimeValue = DateTime.Now,
-                IntValue = 1,
-                StringValue = "Test"
-            };
-            using (var transaction = uOW.BeginTransaction())
-            {
-                repository.Create<TestEntityModel>(entityToCreate);
-            }
-
-            #endregion Create Entity
-
-            #region Retrieve Entity
-
-            var entity = repository.GetById<TestEntityModel>(entityToCreate.Id);
-
-            Assert.IsNotNull(entity);
-            Assert.IsInstanceOfType(entity, typeof(TestEntityModel));
-
-            #endregion Retrieve Entity
-
-            #region Update Entity
-
-            using (var transaction = uOW.BeginTransaction())
-            {
-                entity.IntValue = 2;
-                entity.StringValue = "edited";
-
-                repository.Update(entity);
-            }
-
-            #endregion Update Entity
-
-            #region Delete Entity
-
-            using (var transaction = uOW.BeginTransaction())
-            {
-                repository.Delete<TestEntityModel>(entity.Id);
-            }
-
-            var entityAfterDelete = repository.GetById<TestEntityModel>(entity.Id);
-            Assert.IsNull(entityAfterDelete);
-
-            #endregion Delete Entity
-
-            uOW.Dispose();
-        }
-
-        [TestMethod]
-        public void TestRepositoryAuditableEntities_Mysql()
-        {
-            IUnitOfWork uOW = CreateUnitOfWork_Mysql();
-            var repository = new TestRepository(uOW);
-
-            var entityToCreate = new TestAuditableEntityModel
-            {
-                DateTimeValue = DateTime.Now,
-                IntValue = 1,
-                StringValue = "Test"
-            };
-
-            #region Create Entity
-
-            using (var transaction = uOW.BeginTransaction())
-            {
-                repository.Create<TestAuditableEntityModel>(entityToCreate);
-            }
-
-            #endregion Create Entity
-
-            #region Retrieve Entity
-
-            var entity = repository.GetById<TestAuditableEntityModel>(entityToCreate.Id);
-
-            Assert.IsNotNull(entity);
-            Assert.IsInstanceOfType(entity, typeof(TestAuditableEntityModel));
-
-            #endregion Retrieve Entity
-
-            #region Update Entity
-
-            using (var transaction = uOW.BeginTransaction())
-            {
-                entity.IntValue = 2;
-                entity.StringValue = "edited";
-
-                repository.Update(entity);
-            }
-
-            #endregion Update Entity
-
-            #region Delete Entity
-
-            using (var transaction = uOW.BeginTransaction())
-            {
-                repository.Delete<TestAuditableEntityModel>(entity.Id);
-            }
-
-            var entityAfterDelete = repository.GetById<TestAuditableEntityModel>(entity.Id);
-            Assert.IsNull(entityAfterDelete);
-
-            #endregion Delete Entity
-
-            uOW.Dispose();
-        }
-
-        #endregion MySql
-
-        #region PostgreeSql
-
-        [TestMethod]
-        public void TestUnitOfWork_PostgreeSql()
-        {
-            IUnitOfWork uOW = CreateUnitOfWork_PostgreeSql();
-            using (var transaction = uOW.BeginTransaction())
-            {
-            }
-            uOW.Dispose();
-        }
-
-        [TestMethod]
-        public void TestRepositoryEntities_PostgreeSql()
-        {
-            IUnitOfWork uOW = CreateUnitOfWork_PostgreeSql();
-            var repository = new TestRepository(uOW);
-
-            #region Create Entity
-
-            var entityToCreate = new TestEntityModel
-            {
-                DateTimeValue = DateTime.Now,
-                IntValue = 1,
-                StringValue = "Test"
-            };
-            using (var transaction = uOW.BeginTransaction())
-            {
-                repository.Create<TestEntityModel>(entityToCreate);
-            }
-
-            #endregion Create Entity
-
-            #region Retrieve Entity
-
-            var entity = repository.GetById<TestEntityModel>(entityToCreate.Id);
-
-            Assert.IsNotNull(entity);
-            Assert.IsInstanceOfType(entity, typeof(TestEntityModel));
-
-            #endregion Retrieve Entity
-
-            #region Update Entity
-
-            using (var transaction = uOW.BeginTransaction())
-            {
-                entity.IntValue = 2;
-                entity.StringValue = "edited";
-
-                repository.Update(entity);
-            }
-
-            #endregion Update Entity
-
-            #region Delete Entity
-
-            using (var transaction = uOW.BeginTransaction())
-            {
-                repository.Delete<TestEntityModel>(entity.Id);
-            }
-
-            var entityAfterDelete = repository.GetById<TestEntityModel>(entity.Id);
-            Assert.IsNull(entityAfterDelete);
-
-            #endregion Delete Entity
-
-            uOW.Dispose();
-        }
-
-        #endregion PostgreeSql
-
-        private static IUnitOfWork CreateUnitOfWork_Sqlite()
+        private void CreateUnitOfWork_Sqlite()
         {
             var dbContext = new DbContext
             {
                 ConnectionString = "Data Source=.\\bs.Data.Test.db;Version=3;BinaryGuid=False;",
-                //DatabaseEngineType = "sqlite",
                 DatabaseEngineType = DbType.SQLite,
                 Create = true,
                 Update = true,
                 LookForEntitiesDllInCurrentDirectoryToo = false,
                 SetBatchSize = 25
             };
-            var uOW = new UnitOfWork(dbContext);
-            return uOW;
+
+            services.AddBsData(dbContext);
+            services.AddScoped<BsDataRepository>();
+            serviceProvider = services.BuildServiceProvider();
         }
 
-        private static IUnitOfWork CreateUnitOfWork_Mysql()
+        private void CreateUnitOfWork_Mysql()
         {
             string server_ip = "localhost";
             string server_port = "3307";
@@ -360,31 +77,33 @@ namespace bs.Data.Test
             var dbContext = new DbContext
             {
                 ConnectionString = $"Server={server_ip};Port={server_port};Database={database_name};Uid={db_user_name};Pwd={db_user_password};SslMode=none",
-                //DatabaseEngineType = "mysql",
                 DatabaseEngineType = DbType.MySQL,
                 Create = true,
                 Update = true,
-                UseExecutingAssemblyToo = true,
+                LookForEntitiesDllInCurrentDirectoryToo = false,
                 SetBatchSize = 25
             };
-            var uOW = new UnitOfWork(dbContext);
-            return uOW;
+
+            services.AddBsData(dbContext);
+            services.AddScoped<BsDataRepository>();
+            serviceProvider = services.BuildServiceProvider();
         }
 
-        private static IUnitOfWork CreateUnitOfWork_PostgreeSql()
+        private void CreateUnitOfWork_PostgreeSql()
         {
             var dbContext = new DbContext
             {
                 ConnectionString = "User ID=postgres;Password=password;Host=localhost;Port=5432;Database=bsDataTestDb;Pooling=true;",
-                //DatabaseEngineType = "sqlite",
                 DatabaseEngineType = DbType.PostgreSQL,
                 Create = true,
                 Update = true,
                 LookForEntitiesDllInCurrentDirectoryToo = false,
                 SetBatchSize = 25
             };
-            var uOW = new UnitOfWork(dbContext);
-            return uOW;
+
+            services.AddBsData(dbContext);
+            services.AddScoped<BsDataRepository>();
+            serviceProvider = services.BuildServiceProvider();
         }
     }
 }
