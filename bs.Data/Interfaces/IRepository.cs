@@ -1,14 +1,13 @@
-﻿namespace bs.Data.Interfaces
+﻿using System.Linq;
+using System.Threading.Tasks;
+
+namespace bs.Data.Interfaces
 {
     public interface IRepository
     {
-        //void Create<T>(T entity) where T : IPersistentEntity;
-        //void Delete<T>(Guid id) where T : IPersistentEntity;
-        //IQueryable<T> GetAll<T>() where T : IPersistentEntity;
-        //T GetById<T>(Guid id) where T : IPersistentEntity;
-        //IEnumerable<T> GetByIds<T>(Guid[] ids) where T : IPersistentEntity;
-        //void Update<T>(T entity) where T : IPersistentEntity;
-        //void DeleteLogically<T>(T entity) where T : ILogicallyDeletableEntity;
-        //void RestoreLogically<T>(T entity) where T : ILogicallyDeletableEntity;
+        //Task SaveOrUpdate<TEntity>(TEntity entity) where TEntity : IPersistentEntity;
+        //Task Delete<TEntity>(TEntity entity) where TEntity : IPersistentEntity;
+        //IQueryable<TEntity> Query<TEntity>() where TEntity : IPersistentEntity;
+
     }
 }

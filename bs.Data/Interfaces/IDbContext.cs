@@ -1,4 +1,6 @@
-﻿namespace bs.Data.Interfaces
+﻿using System;
+
+namespace bs.Data.Interfaces
 {
     /// <summary>
     ///
@@ -83,6 +85,7 @@
         /// <value>
         /// The session context.
         /// </value>
-        SessionContext SessionContext { get; set; }
+        //[Obsolete("Use dependency injection and choose scooped service instead of using this. This property doesnt work since the version (3.0.0)")]
+        //SessionContext SessionContext { get; set; }
     }
 }
