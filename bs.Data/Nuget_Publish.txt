@@ -1,1 +1,0 @@
-nuget push bs.Data.1.2.0.nupkg <api key> -Source https://api.nuget.org/v3/index.json

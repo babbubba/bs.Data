@@ -88,12 +88,12 @@ namespace bs.Data.Helpers
         /// <param name="uow">The uow.</param>
         /// <param name="func">The function.</param>
         /// <returns></returns>
-        public static async Task<T> RunInTransaction<T>(this IUnitOfWork uow, Func<Task<T>> func)
+        public static T RunInTransaction<T>(this IUnitOfWork uow, Func<T> func)
         {
             try
             {
                 uow.BeginTransaction();
-                var result = await func();
+                var result = func();
                 uow.Commit();
                 return result;
             }

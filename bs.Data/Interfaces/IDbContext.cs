@@ -77,7 +77,20 @@
         /// </value>
         short SetBatchSize { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [log formatted SQL].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [log formatted SQL]; otherwise, <c>false</c>.
+        /// </value>
         bool LogFormattedSql { get; set; }
+      
+        /// <summary>
+        /// Gets or sets a value indicating whether [log SQL in console].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [log SQL in console]; otherwise, <c>false</c>.
+        /// </value>
         bool LogSqlInConsole { get; set; }
     }
 }
