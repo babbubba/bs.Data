@@ -32,8 +32,6 @@ namespace bs.Data.Helpers
             if (useCurrentdirectoryToo)
             {
                 currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                Debug.WriteLine($"Looking for assemblies to map in current folder (and sub folders) too: '{currentDirectory}'.");
-
                 candidateFiles.AddRange(Directory.EnumerateFiles(currentDirectory, "*.dll", SearchOption.AllDirectories));
             }
 
@@ -42,12 +40,10 @@ namespace bs.Data.Helpers
                 foreach (var folder in foldersWhereLookingForDll)
                 {
                     candidateFiles.AddRange(Directory.EnumerateFiles(folder, "*.dll", SearchOption.AllDirectories));
-                    Debug.WriteLine($"Looking for dlls to map in extra folder (and sub folders): '{folder}'.");
                 }
             }
 
             IEnumerable<string> dllsToLoad;
-            Debug.WriteLine($"{candidateFiles.Count()} candidate dlls to map found.");
 
             if (fileNameScannerPattern != null)
             {
@@ -55,12 +51,12 @@ namespace bs.Data.Helpers
                       .Where(filename => fileNameScannerPattern.Any(pattern => Regex.IsMatch(filename, pattern)));
             }
             else dllsToLoad = candidateFiles;
-            Debug.WriteLine($"{dllsToLoad.Count()} dlls to map was filtered from candidates:");
-            Debug.WriteLine($"- {string.Join("\n- ", dllsToLoad)}");
+            //Debug.WriteLine($"{dllsToLoad.Count()} dlls to map was filtered from candidates:");
+            //Debug.WriteLine($"- {string.Join("\n- ", dllsToLoad)}");
 
             var allAssemblies = dllsToLoad
                       .Select(Assembly.LoadFrom);
-            Debug.WriteLine($"{allAssemblies.Count()} assemblies loaded from dlls.");
+            //Debug.WriteLine($"{allAssemblies.Count()} assemblies loaded from dlls.");
 
             if (useExecutingAssemblyToo)
             {
@@ -77,7 +73,7 @@ namespace bs.Data.Helpers
                                       where iPersistentEntityType.IsAssignableFrom(t) && t.IsClass
                                       select a).Distinct();
 
-            Debug.WriteLine($"{entitiesAssemblies.Count()} assemblies implement IPersisterEntity interface.");
+            //Debug.WriteLine($"{entitiesAssemblies.Count()} assemblies implement IPersisterEntity interface.");
 
             foreach (var assembly in entitiesAssemblies)
             {
@@ -92,7 +88,7 @@ namespace bs.Data.Helpers
                 }
             }
 
-            Debug.WriteLine($"Assemblies mapped in ORM: " + string.Join(",", resultantAssemblies.Select(x => x.Value.FullName)));
+            //Debug.WriteLine($"Assemblies mapped in ORM: " + string.Join(",", resultantAssemblies.Select(x => x.Value.FullName)));
             return resultantAssemblies.Select(x => x.Value);
         }
     }

@@ -1,4 +1,5 @@
 ﻿using bs.Data.Interfaces;
+using System;
 using System.Linq;
 
 namespace bs.Data.Test
@@ -9,19 +10,48 @@ namespace bs.Data.Test
         {
         }
 
-        public BsDataEntityExample[] GetEntityExamples()
+        public PersonModel[] GetPersons()
         {
-            return Query<BsDataEntityExample>().ToArray();
+            return Query<PersonModel>().ToArray();
         }
 
-        public void CreateEntityExample(BsDataEntityExample entity)
+        public void CreatePerson(PersonModel entity)
+        {
+            Create(entity);
+        }
+        public void CreateAddress(AddressModel entity)
         {
             Create(entity);
         }
 
-        public async void CreateEntityExampleAsync(BsDataEntityExample entity)
+        public void CreateCountry(CountryModel entity)
+        {
+            Create(entity);
+        }
+
+        public async void CreateEntityExampleAsync(PersonModel entity)
         {
             await CreateAsync(entity);
+        }
+
+        public AddressModel[] GetAddresses()
+        {
+            return Query<AddressModel>().ToArray();
+        }
+
+        public void UpdatePerson(PersonModel entity)
+        {
+            Update(entity);
+        }
+
+        internal void CreateRoom(RoomModel entity)
+        {
+            Create(entity);
+        }
+
+        public RoomModel[] GetRooms()
+        {
+            return Query<RoomModel>().ToArray();
         }
     }
 }

@@ -21,7 +21,7 @@ namespace bs.Data
         public void BeginTransaction()
         {
             if (transaction != null)
-                throw new RepositoryException("This Unit of Work contains a live transaction. You have to close existing transaction before creating new one.");
+                throw new ORMException("This Unit of Work contains a live transaction. You have to close existing transaction before creating new one.");
 
             transaction = Session.BeginTransaction();
         }

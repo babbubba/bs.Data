@@ -77,13 +77,7 @@
         /// </value>
         short SetBatchSize { get; set; }
 
-        /// <summary>
-        /// Gets or sets the session context (web for web application, call for others type of application).
-        /// </summary>
-        /// <value>
-        /// The session context.
-        /// </value>
-        //[Obsolete("Use dependency injection and choose scooped service instead of using this. This property doesnt work since the version (3.0.0)")]
-        //SessionContext SessionContext { get; set; }
+        bool LogFormattedSql { get; set; }
+        bool LogSqlInConsole { get; set; }
     }
 }
