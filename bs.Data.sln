@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "bs.Data", "bs.Data\bs.Data.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "bs.Data.Test", "bs.Data.Test\bs.Data.Test.csproj", "{60DFA185-25FC-477E-8282-1089824FE85F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "bs.Data.TestAsync", "bs.Data.TestAsync\bs.Data.TestAsync.csproj", "{02699372-AF53-4ABC-84AE-7B2D60267D35}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +33,14 @@ Global
 		{60DFA185-25FC-477E-8282-1089824FE85F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{60DFA185-25FC-477E-8282-1089824FE85F}.Release|x64.ActiveCfg = Release|x64
 		{60DFA185-25FC-477E-8282-1089824FE85F}.Release|x64.Build.0 = Release|x64
+		{02699372-AF53-4ABC-84AE-7B2D60267D35}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02699372-AF53-4ABC-84AE-7B2D60267D35}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02699372-AF53-4ABC-84AE-7B2D60267D35}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{02699372-AF53-4ABC-84AE-7B2D60267D35}.Debug|x64.Build.0 = Debug|Any CPU
+		{02699372-AF53-4ABC-84AE-7B2D60267D35}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02699372-AF53-4ABC-84AE-7B2D60267D35}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02699372-AF53-4ABC-84AE-7B2D60267D35}.Release|x64.ActiveCfg = Release|Any CPU
+		{02699372-AF53-4ABC-84AE-7B2D60267D35}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

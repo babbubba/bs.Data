@@ -25,7 +25,7 @@ namespace bs.Data.Test
         [TestMethod]
         public void Test_SqlServer()
         {
-             CreateUnitOfWork_SqlServer();
+            CreateUnitOfWork_SqlServer();
             var uow = serviceProvider.GetService<IUnitOfWork>();
             var repo = serviceProvider.GetService<BsDataRepository>();
 
@@ -130,6 +130,8 @@ namespace bs.Data.Test
             Assert.IsNotNull(persons.FirstOrDefault().Id);
         }
 
+   
+
         #endregion Sqlite
 
         private void CreateUnitOfWork_Sqlite()
@@ -194,7 +196,7 @@ namespace bs.Data.Test
             {
                 ConnectionString = "Persist Security Info=False;Integrated Security=SSPI; database = OrmTest; server = (local)",
                 DatabaseEngineType = DbType.MsSql2012,
-                Create = false,
+                Create = true,
                 Update = true,
                 LookForEntitiesDllInCurrentDirectoryToo = false,
                 SetBatchSize = 25
