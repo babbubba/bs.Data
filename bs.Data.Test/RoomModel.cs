@@ -1,4 +1,4 @@
-﻿using bs.Data.Interfaces;
+﻿using bs.Data.Interfaces.BaseEntities;
 using NHibernate;
 using NHibernate.Mapping.ByCode;
 using NHibernate.Mapping.ByCode.Conformist;
@@ -12,7 +12,6 @@ namespace bs.Data.Test
         public virtual Guid Id { get; set; }
         public virtual string Name { get; set; }
         public virtual IEnumerable<PersonModel> Persons { get; set; }
-
     }
 
     public class RoomModelMap : ClassMapping<RoomModel>
@@ -35,11 +34,11 @@ namespace bs.Data.Test
                  m.Table("PersonsRooms");
                  m.Key(k => k.Column("RoomId"));
              },
-             map=> map.ManyToMany(p=> 
-             {
-                 p.Class(typeof(PersonModel));
-                 p.Column("PersonId");
-             }));
+             map => map.ManyToMany(p =>
+              {
+                  p.Class(typeof(PersonModel));
+                  p.Column("PersonId");
+              }));
         }
     }
 }

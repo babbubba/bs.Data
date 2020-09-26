@@ -1,4 +1,4 @@
-﻿using bs.Data.Interfaces;
+﻿using bs.Data.Interfaces.BaseEntities;
 using NHibernate;
 using NHibernate.Mapping.ByCode;
 using NHibernate.Mapping.ByCode.Conformist;

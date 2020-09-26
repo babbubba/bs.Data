@@ -1,12 +1,14 @@
 ﻿using bs.Data.Interfaces;
+using bs.Data.Interfaces.BaseEntities;
 using NHibernate;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace bs.Data
 {
     /// <summary>
-    /// Base repository. It implements the base methods to do anything on a database with the ORM
+    /// Base repository. It implements the base methods to do CRUDS on a database with the ORM
     /// </summary>
     /// <seealso cref="bs.Data.Interfaces.IRepository" />
     public abstract class Repository : IRepository
@@ -32,6 +34,10 @@ namespace bs.Data
         /// <param name="entity">The entity.</param>
         protected void Create<TEntity>(TEntity entity) where TEntity : class, IPersistentEntity
         {
+            if (entity.GetType().GetInterfaces().Contains(typeof(IAuditableEntity)))
+            {
+                ((IAuditableEntity)entity).CreationDate = DateTime.UtcNow;
+            }
             unitOfwork.Session.Save(entity);
         }
 
@@ -42,6 +48,10 @@ namespace bs.Data
         /// <param name="entity">The entity.</param>
         protected async Task CreateAsync<TEntity>(TEntity entity) where TEntity : class, IPersistentEntity
         {
+            if (entity.GetType().GetInterfaces().Contains(typeof(IAuditableEntity)))
+            {
+                ((IAuditableEntity)entity).CreationDate = DateTime.UtcNow;
+            }
             await unitOfwork.Session.SaveAsync(entity);
         }
 
@@ -88,8 +98,8 @@ namespace bs.Data
         }
 
         /// <summary>
-        /// Loads the entity by identifier (this not call Database but look for entity in the current session). 
-        /// It throw an exception if entity is not in the session, it means that the entity you are looking for has to be 
+        /// Loads the entity by identifier (this not call Database but look for entity in the current session).
+        /// It throw an exception if entity is not in the session, it means that the entity you are looking for has to be
         /// loaded previously with the <see cref="GetById"></see> or <see cref="GetByIdAsync"></see>  methods.
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
@@ -101,8 +111,8 @@ namespace bs.Data
         }
 
         /// <summary>
-        /// Loads the entity by identifier asynchronous.(this not call Database but look for entity in the current session). 
-        /// It throw an exception if entity is not in the session, it means that the entity you are looking for has to be 
+        /// Loads the entity by identifier asynchronous.(this not call Database but look for entity in the current session).
+        /// It throw an exception if entity is not in the session, it means that the entity you are looking for has to be
         /// loaded previously with the <see cref="GetById"></see> or <see cref="GetByIdAsync"></see>  methods.
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
@@ -124,7 +134,7 @@ namespace bs.Data
         }
 
         /// <summary>
-        /// Queries 'over' this entity type and returns all entities in database of the specified type. 
+        /// Queries 'over' this entity type and returns all entities in database of the specified type.
         /// QueryOver is a specific Nhibernate method that permits to handle in details the way ORM constructs the query to Database.
         /// To know more see: <see cref="https://nhibernate.info/doc/nhibernate-reference/queryqueryover.html">Nhibernate documentation</see>
         /// </summary>
@@ -142,6 +152,10 @@ namespace bs.Data
         /// <param name="entity">The entity.</param>
         protected void Update<TEntity>(TEntity entity) where TEntity : class, IPersistentEntity
         {
+            if (entity.GetType().GetInterfaces().Contains(typeof(IAuditableEntity)))
+            {
+                ((IAuditableEntity)entity).LastUpdateDate = DateTime.UtcNow;
+            }
             unitOfwork.Session.Update(entity);
         }
 
@@ -152,6 +166,10 @@ namespace bs.Data
         /// <param name="entity">The entity.</param>
         protected async Task UpdateAsync<TEntity>(TEntity entity) where TEntity : class, IPersistentEntity
         {
+            if (entity.GetType().GetInterfaces().Contains(typeof(IAuditableEntity)))
+            {
+                ((IAuditableEntity)entity).LastUpdateDate = DateTime.UtcNow;
+            }
             await unitOfwork.Session.UpdateAsync(entity);
         }
     }

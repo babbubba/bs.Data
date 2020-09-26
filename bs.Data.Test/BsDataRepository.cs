@@ -1,9 +1,5 @@
 ﻿using bs.Data.Interfaces;
-using NHibernate.Linq;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace bs.Data.Test
 {
@@ -18,17 +14,16 @@ namespace bs.Data.Test
             return Query<PersonModel>().ToArray();
         }
 
-
         public void CreatePerson(PersonModel entity)
         {
             Create(entity);
         }
-  
+
         public void CreateAddress(AddressModel entity)
         {
             Create(entity);
         }
-      
+
         public void CreateCountry(CountryModel entity)
         {
             Create(entity);
@@ -39,18 +34,15 @@ namespace bs.Data.Test
             return Query<AddressModel>().ToArray();
         }
 
-
         public void UpdatePerson(PersonModel entity)
         {
             Update(entity);
         }
 
-
         public void CreateRoom(RoomModel entity)
         {
             Create(entity);
         }
-
 
         public RoomModel[] GetRooms()
         {

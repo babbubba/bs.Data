@@ -1,10 +1,8 @@
-﻿using bs.Data.Interfaces;
+﻿using bs.Data.Interfaces.BaseEntities;
 using NHibernate;
 using NHibernate.Mapping.ByCode;
 using NHibernate.Mapping.ByCode.Conformist;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace bs.Data.TestAsync
 {
@@ -23,7 +21,6 @@ namespace bs.Data.TestAsync
 
     public class BsDataEntityExampleMap : ClassMapping<BsDataEntityExample>
     {
-
         public BsDataEntityExampleMap()
         {
             Table("EntityExamples");
@@ -54,5 +51,4 @@ namespace bs.Data.TestAsync
             });
         }
     }
-
 }

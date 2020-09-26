@@ -13,7 +13,7 @@ namespace bs.Data.Interfaces
     public interface IUnitOfWork : IAsyncDisposable, IDisposable
     {
         /// <summary>
-        /// Gets the session.
+        /// Gets the ORM session.
         /// </summary>
         /// <value>
         /// The session.

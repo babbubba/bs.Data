@@ -7,7 +7,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "bs.Data", "bs.Data\bs.Data.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "bs.Data.Test", "bs.Data.Test\bs.Data.Test.csproj", "{60DFA185-25FC-477E-8282-1089824FE85F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "bs.Data.TestAsync", "bs.Data.TestAsync\bs.Data.TestAsync.csproj", "{02699372-AF53-4ABC-84AE-7B2D60267D35}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "bs.Data.TestAsync", "bs.Data.TestAsync\bs.Data.TestAsync.csproj", "{02699372-AF53-4ABC-84AE-7B2D60267D35}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1D203339-1C39-4351-9C2D-BF5DC7FF367C}"
+	ProjectSection(SolutionItems) = preProject
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

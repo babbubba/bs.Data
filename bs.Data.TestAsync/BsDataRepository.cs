@@ -1,8 +1,6 @@
 ﻿using bs.Data.Interfaces;
 using NHibernate.Linq;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace bs.Data.TestAsync
@@ -13,7 +11,6 @@ namespace bs.Data.TestAsync
         {
         }
 
-
         public async Task<List<PersonModel>> GetPersonsAsync()
         {
             return await Query<PersonModel>().ToListAsync();
@@ -23,10 +20,12 @@ namespace bs.Data.TestAsync
         {
             await CreateAsync(entity);
         }
+
         public async Task CreateAddressAsync(AddressModel entity)
         {
             await CreateAsync(entity);
         }
+
         public void CreateCountry(CountryModel entity)
         {
             Create(entity);
@@ -37,7 +36,6 @@ namespace bs.Data.TestAsync
             await CreateAsync(entity);
         }
 
-
         public async Task<List<AddressModel>> GetAddressesAsync()
         {
             return await Query<AddressModel>().ToListAsync();
@@ -45,15 +43,13 @@ namespace bs.Data.TestAsync
 
         public async Task UpdatePersonAsync(PersonModel entity)
         {
-           await UpdateAsync(entity);
+            await UpdateAsync(entity);
         }
-
 
         public async Task CreateRoomAsync(RoomModel entity)
         {
             await CreateAsync(entity);
         }
-
 
         public async Task<List<RoomModel>> GetRoomsAsync()
         {

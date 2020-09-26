@@ -29,7 +29,6 @@ namespace bs.Data.Test
             var uow = serviceProvider.GetService<IUnitOfWork>();
             var repo = serviceProvider.GetService<BsDataRepository>();
 
-
             uow.RunInTransaction(() =>
             {
                 var country = new CountryModel
@@ -37,7 +36,6 @@ namespace bs.Data.Test
                     Name = "Italy"
                 };
                 repo.CreateCountry(country);
-
 
                 var person1 = new PersonModel
                 {
@@ -49,8 +47,6 @@ namespace bs.Data.Test
                     Photo = new byte[] { 12, 34, 76, 250, 1, 0, 44, 2 }
                 };
                 repo.CreatePerson(person1);
-
-
 
                 var person1Addresses = new List<AddressModel>();
                 person1Addresses.Add(new AddressModel
@@ -66,7 +62,6 @@ namespace bs.Data.Test
                     PostalCode = "6789",
                     StreetName = "Corso del popolo, 112",
                     Person = person1
-
                 });
                 person1Addresses.ForEach(a => repo.CreateAddress(a));
                 person1.Addresses = person1Addresses;
@@ -120,7 +115,6 @@ namespace bs.Data.Test
                 });
 
                 rooms.ForEach(a => repo.CreateRoom(a));
-
             });
 
             var persons = repo.GetPersons();
@@ -129,8 +123,6 @@ namespace bs.Data.Test
 
             Assert.IsNotNull(persons.FirstOrDefault().Id);
         }
-
-   
 
         #endregion Sqlite
 

@@ -1,4 +1,4 @@
-﻿using bs.Data.Interfaces;
+﻿using bs.Data.Interfaces.BaseEntities;
 using NHibernate;
 using NHibernate.Mapping.ByCode;
 using NHibernate.Mapping.ByCode.Conformist;
@@ -20,8 +20,6 @@ namespace bs.Data.Test
         public virtual IEnumerable<RoomModel> Rooms { get; set; }
     }
 
-
-
     public class PersonModelMap : ClassMapping<PersonModel>
     {
         public PersonModelMap()
@@ -35,8 +33,8 @@ namespace bs.Data.Test
                 x.Column("Id");
                 x.UnsavedValue(Guid.Empty);
             });
-            Property(b => b.Name, map=>map.Length(25));
-            Property(b => b.Lastname, map=>map.Length(25));
+            Property(b => b.Name, map => map.Length(25));
+            Property(b => b.Lastname, map => map.Length(25));
             Property(b => b.Age);
             Property(b => b.ContactDate);
             Property(b => b.Description, x =>
@@ -55,7 +53,7 @@ namespace bs.Data.Test
                 m.Inverse(true);
                 m.Key(km => km.Column("PersonId"));
             },
-            map => map.OneToMany(a =>a.Class(typeof(AddressModel))));
+            map => map.OneToMany(a => a.Class(typeof(AddressModel))));
 
             Bag(x => x.Rooms, m =>
             {

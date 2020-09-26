@@ -10,7 +10,6 @@ using System.Linq;
 
 namespace bs.Data
 {
-
     public static class BSDataExtensions
     {
         /// <summary>
@@ -114,7 +113,7 @@ namespace bs.Data
             }
             catch (System.Exception ex)
             {
-                throw new ORMException("Error building ORM session factory. Maybe there is a problem in the DbContext object. See inner exception for details",ex);
+                throw new ORMException("Error building ORM session factory. Maybe there is a problem in the DbContext object. See inner exception for details", ex);
             }
 
             // Add to dependency injecton the factory (singleton) and session and unit of work scoped
@@ -126,7 +125,7 @@ namespace bs.Data
             }
             catch (System.Exception ex)
             {
-                throw new ORMException("Error registering services in the provided Service Collection. See inner exception for details.",ex);
+                throw new ORMException("Error registering services in the provided Service Collection. See inner exception for details.", ex);
             }
 
             return services;

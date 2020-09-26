@@ -9,6 +9,7 @@ namespace bs.Data
             UseExecutingAssemblyToo = true;
             SetBatchSize = 20;
         }
+
         public string ConnectionString { get; set; }
         public DbType DatabaseEngineType { get; set; }
         public string[] FoldersWhereLookingForEntitiesDll { get; set; }

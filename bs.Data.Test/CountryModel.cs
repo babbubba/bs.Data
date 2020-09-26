@@ -1,4 +1,4 @@
-﻿using bs.Data.Interfaces;
+﻿using bs.Data.Interfaces.BaseEntities;
 using NHibernate;
 using NHibernate.Mapping.ByCode;
 using NHibernate.Mapping.ByCode.Conformist;
@@ -11,7 +11,6 @@ namespace bs.Data.Test
         public virtual Guid Id { get; set; }
 
         public virtual string Name { get; set; }
-
     }
 
     public class CountryModelMap : ClassMapping<CountryModel>
@@ -27,9 +26,8 @@ namespace bs.Data.Test
                 x.Column("Id");
                 x.UnsavedValue(Guid.Empty);
             });
-      
+
             Property(b => b.Name, map => map.Length(50));
-           
         }
     }
 }

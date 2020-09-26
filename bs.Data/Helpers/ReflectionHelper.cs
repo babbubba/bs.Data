@@ -1,4 +1,4 @@
-﻿using bs.Data.Interfaces;
+﻿using bs.Data.Interfaces.BaseEntities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
