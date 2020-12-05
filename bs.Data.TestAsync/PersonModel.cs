@@ -7,8 +7,12 @@ using System.Collections.Generic;
 
 namespace bs.Data.TestAsync
 {
-    public class PersonModel : IPersistentEntity
+    public class PersonModel : IPersistentEntity, ILogicallyDeletableEntity
     {
+        public PersonModel()
+        {
+            Addresses = new List<AddressModel>();
+        }
         public virtual Guid Id { get; set; }
         public virtual string Name { get; set; }
         public virtual string Lastname { get; set; }
@@ -16,8 +20,10 @@ namespace bs.Data.TestAsync
         public virtual int Age { get; set; }
         public virtual DateTime ContactDate { get; set; }
         public virtual byte[] Photo { get; set; }
-        public virtual IEnumerable<AddressModel> Addresses { get; set; }
-        public virtual IEnumerable<RoomModel> Rooms { get; set; }
+        public virtual ICollection<AddressModel> Addresses { get; set; }
+        public virtual ICollection<RoomModel> Rooms { get; set; }
+        public virtual bool IsDeleted { get; set; }
+        public virtual DateTime? DeletionDate { get; set; }
     }
 
     public class PersonModelMap : ClassMapping<PersonModel>
@@ -65,6 +71,9 @@ namespace bs.Data.TestAsync
                 p.Class(typeof(RoomModel));
                 p.Column("RoomId");
             }));
+
+            Property(b => b.IsDeleted);
+            Property(b => b.DeletionDate);
         }
     }
 }

@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 
 namespace bs.Data.Helpers
 {
+    /// <summary>
+    /// Extension to manage Unit of Work transactions
+    /// </summary>
     public static class UnitOfWorkExtensions
     {
         /// <summary>

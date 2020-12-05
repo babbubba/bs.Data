@@ -6,7 +6,7 @@ namespace bs.Data.Interfaces.BaseEntities
     ///   <para>This interface is used to define 'auditable' (they have a creation and last update date) entities.</para>
     ///   <para>The value of the properties CreationDate and LastUpdateDate are managed in the repository base class directly.</para>
     /// </summary>
-    public interface IAuditableEntity : IPersistentEntity
+    public interface IAuditableEntity 
     {
         /// <summary>Gets or sets the creation date.</summary>
         /// <value>The creation date.</value>

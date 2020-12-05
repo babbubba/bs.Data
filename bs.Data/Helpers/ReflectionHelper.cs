@@ -51,12 +51,9 @@ namespace bs.Data.Helpers
                       .Where(filename => fileNameScannerPattern.Any(pattern => Regex.IsMatch(filename, pattern)));
             }
             else dllsToLoad = candidateFiles;
-            //Debug.WriteLine($"{dllsToLoad.Count()} dlls to map was filtered from candidates:");
-            //Debug.WriteLine($"- {string.Join("\n- ", dllsToLoad)}");
 
             var allAssemblies = dllsToLoad
                       .Select(Assembly.LoadFrom);
-            //Debug.WriteLine($"{allAssemblies.Count()} assemblies loaded from dlls.");
 
             if (useExecutingAssemblyToo)
             {
@@ -73,8 +70,6 @@ namespace bs.Data.Helpers
                                       where iPersistentEntityType.IsAssignableFrom(t) && t.IsClass
                                       select a).Distinct();
 
-            //Debug.WriteLine($"{entitiesAssemblies.Count()} assemblies implement IPersisterEntity interface.");
-
             foreach (var assembly in entitiesAssemblies)
             {
                 if (!resultantAssemblies.ContainsKey(assembly.FullName))
@@ -88,7 +83,6 @@ namespace bs.Data.Helpers
                 }
             }
 
-            //Debug.WriteLine($"Assemblies mapped in ORM: " + string.Join(",", resultantAssemblies.Select(x => x.Value.FullName)));
             return resultantAssemblies.Select(x => x.Value);
         }
     }

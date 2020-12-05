@@ -4,6 +4,9 @@ namespace bs.Data.Interfaces
 {
     public enum DbType
     {
+        [Description("Undefined")]
+        Undefined = 0,
+
         [Description("MySql Server")]
         MySQL = 10,
 

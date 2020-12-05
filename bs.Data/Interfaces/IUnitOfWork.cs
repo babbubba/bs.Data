@@ -26,40 +26,40 @@ namespace bs.Data.Interfaces
         void BeginTransaction();
 
         /// <summary>
-        /// Commits the last transaction in this session
+        /// Commits the current transaction in this session
         /// </summary>
         void Commit();
 
         /// <summary>
-        /// Commits the last transaction in this session asynchronously.
+        /// Commits the current transaction in this session asynchronously.
         /// </summary>
         /// <returns></returns>
         Task CommitAsync();
 
         /// <summary>
-        /// Rollbacks the last transaction in this session
+        /// Rollbacks the current transaction in this session
         /// </summary>
         void Rollback();
 
         /// <summary>
-        /// Rollbacks the last transaction in this session asynchronously.
+        /// Rollbacks the current transaction in this session asynchronously.
         /// </summary>
         /// <returns></returns>
         Task RollbackAsync();
 
         /// <summary>
-        /// Tries to commit the last transaction in this session if exception occurs rollback transaction.
+        /// Tries to commit the current transaction in this session if exception occurs rollback transaction and throw the exception.
         /// </summary>
         void TryCommitOrRollback();
 
         /// <summary>
-        /// Tries to commit the last transaction in this session if exception occurs rollback transaction asynchronously.
+        /// Tries to commit the current transaction in this session if exception occurs rollback transaction asynchronously and throw the exception.
         /// </summary>
         /// <returns></returns>
         Task TryCommitOrRollbackAsync();
 
         /// <summary>
-        /// Closes the transaction.
+        /// Closes current transaction.
         /// </summary>
         void CloseTransaction();
     }

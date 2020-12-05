@@ -20,12 +20,31 @@ namespace bs.Data
         /// <returns></returns>
         public static IServiceCollection AddBsData(this IServiceCollection services, IDbContext dbContext)
         {
+            if (services is null)
+            {
+                throw new System.ArgumentNullException(nameof(services),"ServiceCollection is mandatory to handle dependency injection in consumer application");
+            }
+
+            if (dbContext is null)
+            {
+                throw new System.ArgumentNullException(nameof(dbContext),"The context is mandatory to init the ORM");
+            }
+
+            if (dbContext.DatabaseEngineType == DbType.Undefined)
+            {
+                throw new System.ArgumentOutOfRangeException(nameof(dbContext.DatabaseEngineType), "The Database Engine Type is mandatory to init the ORM");
+            }
+
+            if (string.IsNullOrWhiteSpace(dbContext.ConnectionString))
+            {
+                throw new System.ArgumentOutOfRangeException(nameof(dbContext.ConnectionString), "Connection String to database is mandatory to init the ORM");
+            }
+
             // Create the mapper
             var mapper = new ModelMapper();
 
             // Add the entities defined in this assemblies
             mapper.AddMappings(typeof(BSDataExtensions).Assembly.ExportedTypes);
-            //System.Diagnostics.Debug.WriteLine("ORM - Mapped internal types: " + string.Join(",", typeof(BSDataExtensions).Assembly.ExportedTypes.Select(t => t.Name)));
 
             // Add the entities defined in other assemblies
             try
@@ -78,7 +97,7 @@ namespace bs.Data
                     break;
 
                 default:
-                    throw new ORMException("The database type selected is not supported in current version.");
+                    throw new ORMException("The Database Engine Type selected is not supported in current version.");
             }
 
             // sets creation, updation, recreation or simple validation of schema
@@ -99,7 +118,7 @@ namespace bs.Data
             try
             {
                 configuration.AddMapping(domainMapping);
-            }
+            }        
             catch (System.Exception ex)
             {
                 throw new ORMException("Error adding mappings to ORM. See inner exceptions for details.", ex);
@@ -111,9 +130,15 @@ namespace bs.Data
             {
                 sessionFactory = configuration.BuildSessionFactory();
             }
+            catch (SchemaValidationException schemaValidationEx)
+            {
+                var exception = new ORMValidationException("Error validating schema. See validation errors.", schemaValidationEx);
+                exception.ValidationErrors = schemaValidationEx.ValidationErrors;
+                throw exception;
+            }
             catch (System.Exception ex)
             {
-                throw new ORMException("Error building ORM session factory. Maybe there is a problem in the DbContext object. See inner exception for details", ex);
+                throw new ORMException("Error building ORM session factory. See inner exception for details", ex);
             }
 
             // Add to dependency injecton the factory (singleton) and session and unit of work scoped

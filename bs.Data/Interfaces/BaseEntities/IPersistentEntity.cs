@@ -7,8 +7,8 @@
     {
     }
 
-    public interface IPersistentEntity<T>
-    {
-        T Id { get; set; }
-    }
+    //public interface IPersistentEntity<T>
+    //{
+    //    T Id { get; set; }
+    //}
 }

@@ -40,23 +40,26 @@ namespace bs.Data.TestAsync
                 };
                 await repo.CreatePersonAsync(person1);
 
-                var person1Addresses = new List<AddressModel>();
-                person1Addresses.Add(new AddressModel
+                var p1a1 = new AddressModel
                 {
                     Country = country,
                     PostalCode = "12345",
                     StreetName = "Via liguria, 34/12",
                     Person = person1
-                });
-                person1Addresses.Add(new AddressModel
+                };
+                await repo.CreateAddressAsync(p1a1);
+                person1.Addresses.Add(p1a1);
+
+                var p1a2 = new AddressModel
                 {
                     Country = country,
                     PostalCode = "6789",
                     StreetName = "Corso del popolo, 112",
                     Person = person1
-                });
-                person1Addresses.ForEach(async a => await repo.CreateAddressAsync(a));
-                person1.Addresses = person1Addresses;
+                };
+                await repo.CreateAddressAsync(p1a2);
+                person1.Addresses.Add(p1a2);
+
                 await repo.UpdatePersonAsync(person1);
 
                 var person2 = new PersonModel
@@ -70,23 +73,26 @@ namespace bs.Data.TestAsync
                 };
                 await repo.CreatePersonAsync(person2);
 
-                var person2Addresses = new List<AddressModel>();
-                person2Addresses.Add(new AddressModel
+                var p2a1 = new AddressModel
                 {
                     Country = country,
                     PostalCode = "666",
                     StreetName = "Via carlo rosselli, 2",
                     Person = person2
-                });
-                person2Addresses.Add(new AddressModel
+                };
+                await repo.CreateAddressAsync(p2a1);
+                person2.Addresses.Add(p2a1);
+
+                var p2a2 = new AddressModel
                 {
                     Country = country,
                     PostalCode = "321",
                     StreetName = "Corso francia, 1112",
                     Person = person2
-                });
-                person2Addresses.ForEach(async a => await repo.CreateAddressAsync(a));
-                person2.Addresses = person2Addresses;
+                };
+                await repo.CreateAddressAsync(p2a2);
+                person2.Addresses.Add(p2a2);
+
                 await repo.UpdatePersonAsync(person2);
 
                 var rooms = new List<RoomModel>();
@@ -107,19 +113,30 @@ namespace bs.Data.TestAsync
                 });
 
                 rooms.ForEach(async a => await repo.CreateRoomAsync(a));
-
-                var personsRet = await repo.GetPersonsAsync();
-                var addressRet = await repo.GetAddressesAsync();
-                var roomsRet = await repo.GetRoomsAsync();
-                Assert.NotNull(personsRet.FirstOrDefault());
             });
+
+            await uow.RunInTransactionAsync(async () =>
+            {
+                var personsRet = repo.GetPersons();
+                repo.DeletePersonLogically(personsRet.Last());
+            });
+
+            await uow.RunInTransactionAsync(async () =>
+        {
+                //var personsRet = await repo.GetPersonsAsync();
+                var personsRet = repo.GetPersonsLogicallyNotDeleted();
+                //var addressRet = await repo.GetAddressesAsync();
+                //var roomsRet = await repo.GetRoomsAsync();
+                Assert.NotNull(personsRet.FirstOrDefault());
+        });
         }
 
         private void CreateUnitOfWork_SqlServer()
         {
             var dbContext = new DbContext
             {
-                ConnectionString = "Persist Security Info=False;Integrated Security=SSPI; database = OrmTest; server = (local)",
+                //ConnectionString = "Persist Security Info=False;Integrated Security=SSPI; database = OrmTest; server = (local)",
+                ConnectionString = "Persist Security Info=False;Integrated Security=SSPI; database = ORMTest; server = .\\SQLEXPRESS2012",
                 DatabaseEngineType = DbType.MsSql2012,
                 Create = true,
                 Update = true,
@@ -128,7 +145,7 @@ namespace bs.Data.TestAsync
             };
             services = new ServiceCollection();
             services.AddBsData(dbContext);
-            services.AddScoped<BsDataRepository>();
+            services.AddSingleton<BsDataRepository>();
             serviceProvider = services.BuildServiceProvider();
         }
     }

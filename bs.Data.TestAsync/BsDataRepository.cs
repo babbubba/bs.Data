@@ -11,9 +11,29 @@ namespace bs.Data.TestAsync
         {
         }
 
-        public async Task<List<PersonModel>> GetPersonsAsync()
+        public async Task<IEnumerable<PersonModel>> GetPersonsAsync()
         {
             return await Query<PersonModel>().ToListAsync();
+        }
+
+        public IEnumerable<PersonModel> GetPersons()
+        {
+            return Query<PersonModel>();
+        }
+
+        public IEnumerable<PersonModel> GetPersonsLogicallyNotDeleted()
+        {
+            return QueryLogicallyNotDeleted<PersonModel>();
+        }
+
+        public IEnumerable<PersonModel> GetPersonsLogicallyDeleted()
+        {
+            return QueryLogicallyDeleted<PersonModel>();
+        }
+
+        public void DeletePersonLogically(PersonModel person)
+        {
+            DeleteLogically(person);
         }
 
         public async Task CreatePersonAsync(PersonModel entity)
@@ -36,7 +56,7 @@ namespace bs.Data.TestAsync
             await CreateAsync(entity);
         }
 
-        public async Task<List<AddressModel>> GetAddressesAsync()
+        public async Task<IEnumerable<AddressModel>> GetAddressesAsync()
         {
             return await Query<AddressModel>().ToListAsync();
         }
@@ -51,7 +71,7 @@ namespace bs.Data.TestAsync
             await CreateAsync(entity);
         }
 
-        public async Task<List<RoomModel>> GetRoomsAsync()
+        public async Task<IEnumerable<RoomModel>> GetRoomsAsync()
         {
             return await Query<RoomModel>().ToListAsync();
         }

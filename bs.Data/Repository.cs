@@ -76,6 +76,54 @@ namespace bs.Data
         }
 
         /// <summary>
+        /// Deletes the specified entity logically. It not  remove entity fron database.
+        /// </summary>
+        /// <typeparam name="TEntity">The type of the entity.</typeparam>
+        /// <param name="entity">The entity.</param>
+        protected void DeleteLogically<TEntity>(TEntity entity) where TEntity : class, IPersistentEntity, ILogicallyDeletableEntity
+        {
+            entity.IsDeleted = true;
+            entity.DeletionDate = DateTime.UtcNow;
+            unitOfwork.Session.Update(entity);
+        }
+
+        /// <summary>
+        /// Deletes the specified entity asynchronous. It not  remove entity fron database.
+        /// </summary>
+        /// <typeparam name="TEntity">The type of the entity.</typeparam>
+        /// <param name="entity">The entity.</param>
+        protected async Task DeleteLogicallyAsync<TEntity>(TEntity entity) where TEntity : class, IPersistentEntity, ILogicallyDeletableEntity
+        {
+            entity.IsDeleted = true;
+            entity.DeletionDate = DateTime.UtcNow;
+            await unitOfwork.Session.UpdateAsync(entity);
+        }
+
+        /// <summary>
+        /// Deletes the specified entity logically. It not  remove entity fron database.
+        /// </summary>
+        /// <typeparam name="TEntity">The type of the entity.</typeparam>
+        /// <param name="entity">The entity.</param>
+        protected void RestoreLogically<TEntity>(TEntity entity) where TEntity : class, IPersistentEntity, ILogicallyDeletableEntity
+        {
+            entity.IsDeleted = false;
+            entity.DeletionDate = null;
+            unitOfwork.Session.Update(entity);
+        }
+
+        /// <summary>
+        /// Deletes the specified entity asynchronous. It not  remove entity fron database.
+        /// </summary>
+        /// <typeparam name="TEntity">The type of the entity.</typeparam>
+        /// <param name="entity">The entity.</param>
+        protected async Task RestoreLogicallyAsync<TEntity>(TEntity entity) where TEntity : class, IPersistentEntity, ILogicallyDeletableEntity
+        {
+            entity.IsDeleted = false;
+            entity.DeletionDate = null;
+            await unitOfwork.Session.UpdateAsync(entity);
+        }
+
+        /// <summary>
         /// Gets the entity by identifier.
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
@@ -123,14 +171,47 @@ namespace bs.Data
             return await unitOfwork.Session.LoadAsync<TEntity>(id);
         }
 
-        /// <summary>
-        /// Queries this entity type and returns all entities in database of the specified type.
-        /// </summary>
-        /// <typeparam name="TEntity">The type of the entity.</typeparam>
-        /// <returns></returns>
+
         protected IQueryable<TEntity> Query<TEntity>() where TEntity : class, IPersistentEntity
         {
             return unitOfwork.Session.Query<TEntity>();
+        }
+
+
+
+        /// <summary>
+        /// Queries this entity type and returns all entities in database of the specified type that is not logically deleted.
+        /// </summary>
+        /// <typeparam name="TEntity">The type of the entity.</typeparam>
+        /// <returns></returns>
+        //protected IQueryable<TEntity> Query<TEntity>() where TEntity : class, IPersistentEntity
+        //{
+        //    var query = unitOfwork.Session.Query<TEntity>();
+        //    if (typeof(TEntity).GetInterfaces().Contains(typeof(ILogicallyDeletableEntity)))
+        //    {
+        //        //query = query.OfType<ILogicallyDeletableEntity>().Where(e=>!e.IsDeleted).OfType<TEntity>();
+        //        //query = from e in query
+        //        //        where e is ILogicallyDeletableEntity && !((ILogicallyDeletableEntity)e).IsDeleted
+        //        //        select e;
+
+        //        //query = query.Select(e => (ILogicallyDeletableEntity)e).Where(d => !d.IsDeleted);
+        //    }
+        //    return query;
+        //}
+
+        /// <summary>
+        /// Queries the logically deleted entities of the specified type in the database.
+        /// </summary>
+        /// <typeparam name="TEntity">The type of the entity.</typeparam>
+        /// <returns></returns>
+        protected IQueryable<TEntity> QueryLogicallyDeleted<TEntity>() where TEntity : class, IPersistentEntity, ILogicallyDeletableEntity
+        {
+            return unitOfwork.Session.Query<TEntity>().Where(e => e.IsDeleted);
+        }
+
+        protected IQueryable<TEntity> QueryLogicallyNotDeleted<TEntity>() where TEntity : class, IPersistentEntity, ILogicallyDeletableEntity
+        {
+            return unitOfwork.Session.Query<TEntity>().Where(e => !e.IsDeleted);
         }
 
         /// <summary>
