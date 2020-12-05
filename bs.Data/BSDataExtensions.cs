@@ -132,9 +132,11 @@ namespace bs.Data
             }
             catch (SchemaValidationException schemaValidationEx)
             {
-                var exception = new ORMValidationException("Error validating schema. See validation errors.", schemaValidationEx);
-                exception.ValidationErrors = schemaValidationEx.ValidationErrors;
-                throw exception;
+                throw new ORMException($"Error validating schema:\n{string.Join(";\n ", schemaValidationEx.ValidationErrors)}", schemaValidationEx);
+
+                //var exception = new ORMValidationException("Error validating schema. See validation errors.", schemaValidationEx);
+                //exception.ValidationErrors = schemaValidationEx.ValidationErrors;
+                //throw exception;
             }
             catch (System.Exception ex)
             {
