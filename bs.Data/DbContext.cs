@@ -1,4 +1,5 @@
 ﻿using bs.Data.Interfaces;
+using System.Collections.Generic;
 
 namespace bs.Data
 {
@@ -94,5 +95,14 @@ namespace bs.Data
         ///   <c>true</c> if [log SQL in console]; otherwise, <c>false</c>.
         /// </value>
         public bool LogSqlInConsole { get; set; }
+
+        /// <summary>
+        /// Gets or sets the classes to imports to use as Model in CreateQuery (entityName/className -> AssemblyQualifiedName).
+        /// </summary>
+        /// <value>
+        /// The imports.
+        /// </value>
+        public IDictionary<string, string> Imports { get; set ; }
+
     }
 }

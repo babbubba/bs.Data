@@ -45,6 +45,7 @@ namespace bs.Data
 
             // Add the entities defined in this assemblies
             mapper.AddMappings(typeof(BSDataExtensions).Assembly.ExportedTypes);
+           
 
             // Add the entities defined in other assemblies
             try
@@ -60,10 +61,20 @@ namespace bs.Data
 
             // Compile mapped entities
             HbmMapping domainMapping = mapper.CompileMappingForAllExplicitlyAddedEntities();
+            domainMapping.autoimport = true;
+            
+       
 
             // Prepares configuration
             var configuration = new Configuration();
             var databaseIntegration = new NHibernate.Cfg.Loquacious.DbIntegrationConfigurationProperties(configuration);
+          
+            // import extra not persistent model
+            foreach(var import in dbContext.Imports)
+            {
+                configuration.Imports.Add(import);
+            }
+         
 
             // It use the right database integration properties by the database type choosen
             switch (dbContext.DatabaseEngineType)
@@ -133,10 +144,6 @@ namespace bs.Data
             catch (SchemaValidationException schemaValidationEx)
             {
                 throw new ORMException($"Error validating schema:\n{string.Join(";\n ", schemaValidationEx.ValidationErrors)}", schemaValidationEx);
-
-                //var exception = new ORMValidationException("Error validating schema. See validation errors.", schemaValidationEx);
-                //exception.ValidationErrors = schemaValidationEx.ValidationErrors;
-                //throw exception;
             }
             catch (System.Exception ex)
             {

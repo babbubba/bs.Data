@@ -1,4 +1,7 @@
-﻿namespace bs.Data.Interfaces
+﻿using System.Collections;
+using System.Collections.Generic;
+
+namespace bs.Data.Interfaces
 {
     /// <summary>
     ///
@@ -92,5 +95,13 @@
         ///   <c>true</c> if [log SQL in console]; otherwise, <c>false</c>.
         /// </value>
         bool LogSqlInConsole { get; set; }
+
+        /// <summary>
+        /// Gets or sets the classes to imports to use as Model in CreateQuery (entityName/className -> AssemblyQualifiedName).
+        /// </summary>
+        /// <value>
+        /// The imports.
+        /// </value>
+        IDictionary<string, string> Imports { get; set; }
     }
 }
