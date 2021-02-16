@@ -26,13 +26,16 @@ namespace bs.Data
             this.Session = session;
         }
 
+        public bool TransactionIsNotNull => !(transaction is null);
+
+
         /// <summary>
         /// Begins the transaction.
         /// </summary>
         /// <exception cref="ORMException">This Unit of Work contains a live transaction. You have to close existing transaction before creating new one.</exception>
         public void BeginTransaction()
         {
-            if (transaction != null)
+            if (transaction?.IsActive ?? false)
                 throw new ORMException("This Unit of Work contains a live transaction. You have to close existing transaction before creating new one.");
 
             transaction = Session.BeginTransaction();
@@ -51,19 +54,19 @@ namespace bs.Data
         }
 
         /// <summary>
-        /// Commits the current transaction in this session
+        /// Commits the current transaction in this session if this transaction was not rolled back before.
         /// </summary>
         public void Commit()
         {
-            transaction.Commit();
+            if (!(transaction?.WasRolledBack ?? true))  transaction.Commit();
         }
 
         /// <summary>
-        /// Commits the current transaction in this session asynchronously.
+        /// Commits the current transaction in this session asynchronously if this transaction was not rolled back before.
         /// </summary>
         public async Task CommitAsync()
         {
-            await transaction.CommitAsync();
+            if (!(transaction?.WasRolledBack ?? true)) await transaction.CommitAsync();
         }
 
         /// <summary>
@@ -71,7 +74,7 @@ namespace bs.Data
         /// </summary>
         public void Rollback()
         {
-            transaction.Rollback();
+            if (!(transaction?.WasCommitted ?? true)) transaction.Rollback();
         }
 
         /// <summary>
@@ -79,7 +82,7 @@ namespace bs.Data
         /// </summary>
         public async Task RollbackAsync()
         {
-            await transaction.RollbackAsync();
+            if (!(transaction?.WasCommitted ?? true)) await transaction.RollbackAsync();
         }
 
         /// <summary>
@@ -151,14 +154,18 @@ namespace bs.Data
 
         public async ValueTask DisposeAsync()
         {
-            if (transaction != null && transaction.IsActive)
+            if (!disposedValue)
             {
-                await TryCommitOrRollbackAsync();
-                Session?.Dispose();
-            }
+                if (transaction != null && transaction.IsActive)
+                {
+                    await TryCommitOrRollbackAsync();
+                    Session?.Dispose();
+                }
 
-            Dispose(false);
-            GC.SuppressFinalize(this);
+                Dispose(false);
+                GC.SuppressFinalize(this);
+            }
+                
         }
     }
 }
