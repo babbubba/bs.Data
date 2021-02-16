@@ -70,11 +70,13 @@ namespace bs.Data
             var databaseIntegration = new NHibernate.Cfg.Loquacious.DbIntegrationConfigurationProperties(configuration);
           
             // import extra not persistent model
-            foreach(var import in dbContext.Imports)
+            if(dbContext.Imports!=null)
             {
-                configuration.Imports.Add(import);
+                foreach (var import in dbContext.Imports)
+                {
+                    configuration.Imports.Add(import);
+                }
             }
-         
 
             // It use the right database integration properties by the database type choosen
             switch (dbContext.DatabaseEngineType)
@@ -150,7 +152,7 @@ namespace bs.Data
                 throw new ORMException("Error building ORM session factory. See inner exception for details", ex);
             }
 
-            // Add to dependency injecton the factory (singleton) and session and unit of work scoped
+            // Add to dependency injecton the factory (singleton) and session and unit of work (scoped)
             try
             {
                 services.AddSingleton(sessionFactory);

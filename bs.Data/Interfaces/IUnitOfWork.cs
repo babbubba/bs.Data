@@ -20,6 +20,7 @@ namespace bs.Data.Interfaces
         /// </value>
         ISession Session { get; }
 
+        bool TransactionIsNotNull { get; }
         /// <summary>
         /// Begins the transaction.
         /// </summary>

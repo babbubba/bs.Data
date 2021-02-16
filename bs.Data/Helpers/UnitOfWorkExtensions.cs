@@ -11,6 +11,7 @@ namespace bs.Data.Helpers
     {
         /// <summary>
         /// Execute the statement in action wrapped by an ORM transaction asyncronously. It commit (and in case of exception rollback) when action finish. After it close and destroy the transaction.
+        /// It doesnt matter if you closed the transaction before.
         /// </summary>
         /// <param name="uow">The unit of work.</param>
         /// <param name="action">The action to execute in the unit of work context.</param>
@@ -25,20 +26,31 @@ namespace bs.Data.Helpers
         /// }</code></example>
         public static async Task RunInTransactionAsync(this IUnitOfWork uow, Action action)
         {
+            if (uow is null)
+            {
+                throw new ORMException("Unit of work is not a valid instance, cannot run a new transaction");
+            }
+            if (uow.Session is null)
+            {
+                throw new ORMException("Unit of work has not a valid session instance, cannot run a new transaction");
+            }
+            
+
             try
             {
                 uow.BeginTransaction();
                 action();
-                await uow.CommitAsync();
+
+                if(uow.TransactionIsNotNull) await uow.CommitAsync();
             }
-            catch
+            catch (Exception ex)
             {
-                await uow.RollbackAsync();
-                throw;
+                if (uow.TransactionIsNotNull) await uow.RollbackAsync();
+                throw new ORMException(ex.GetBaseException().Message, ex);
             }
             finally
             {
-                uow.CloseTransaction();
+                if (uow.TransactionIsNotNull) uow.CloseTransaction();
             }
         }
 
@@ -53,16 +65,17 @@ namespace bs.Data.Helpers
             {
                 uow.BeginTransaction();
                 action();
-                uow.Commit();
+                if (uow.TransactionIsNotNull) uow.Commit();
             }
-            catch
+            catch(Exception ex)
             {
-                uow.Rollback();
-                throw;
+                if (uow.TransactionIsNotNull) uow.Rollback();
+                throw new ORMException(ex.GetBaseException().Message, ex);
+
             }
             finally
             {
-                uow.CloseTransaction();
+                if (uow.TransactionIsNotNull) uow.CloseTransaction();
             }
         }
 
@@ -89,17 +102,17 @@ namespace bs.Data.Helpers
             {
                 uow.BeginTransaction();
                 var result = await func();
-                await uow.CommitAsync();
+                if (uow.TransactionIsNotNull)  await uow.CommitAsync();
                 return result;
             }
-            catch
+            catch(Exception ex)
             {
-                await uow.RollbackAsync();
-                throw;
+                if (uow.TransactionIsNotNull) await uow.RollbackAsync();
+                throw new ORMException(ex.GetBaseException().Message, ex);
             }
             finally
             {
-                uow.CloseTransaction();
+                if (uow.TransactionIsNotNull) uow.CloseTransaction();
             }
         }
 
@@ -116,17 +129,17 @@ namespace bs.Data.Helpers
             {
                 uow.BeginTransaction();
                 var result = func();
-                uow.Commit();
+                if (uow.TransactionIsNotNull) uow.Commit();
                 return result;
             }
-            catch
+            catch(Exception ex)
             {
-                uow.Rollback();
-                throw;
+                if (uow.TransactionIsNotNull) uow.Rollback();
+                throw new ORMException(ex.GetBaseException().Message, ex);
             }
             finally
             {
-                uow.CloseTransaction();
+                if (uow.TransactionIsNotNull) uow.CloseTransaction();
             }
         }
     }
