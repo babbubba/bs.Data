@@ -1,5 +1,9 @@
 ﻿using bs.Data.Interfaces;
+using NHibernate;
+using NHibernate.Exceptions;
 using System;
+using System.Data.SqlClient;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace bs.Data.Helpers
@@ -7,7 +11,7 @@ namespace bs.Data.Helpers
     /// <summary>
     /// Extension to manage Unit of Work transactions
     /// </summary>
-    public static class UnitOfWorkExtensions
+    public static partial class UnitOfWorkExtensions
     {
         /// <summary>
         /// Execute the statement in action wrapped by an ORM transaction asyncronously. It commit (and in case of exception rollback) when action finish. After it close and destroy the transaction.
@@ -34,14 +38,14 @@ namespace bs.Data.Helpers
             {
                 throw new ORMException("Unit of work has not a valid session instance, cannot run a new transaction");
             }
-            
+
 
             try
             {
                 uow.BeginTransaction();
                 action();
 
-                if(uow.TransactionIsNotNull) await uow.CommitAsync();
+                if (uow.TransactionIsNotNull) await uow.CommitAsync();
             }
             catch (Exception ex)
             {
@@ -54,6 +58,40 @@ namespace bs.Data.Helpers
             }
         }
 
+        public static async Task RunInTransactionAsync(this IUnitOfWork uow, Action action, int retry)
+        {
+            if (uow is null)
+            {
+                throw new ORMException("Unit of work is not a valid instance, cannot run a new transaction");
+            }
+            if (uow.Session is null)
+            {
+                throw new ORMException("Unit of work has not a valid session instance, cannot run a new transaction");
+            }
+
+            while (true)
+            {
+                using (var transaction = uow.Session.BeginTransaction())
+                {
+                    try
+                    {
+                        action();
+                        await transaction.CommitAsync();
+                        break; // stop looping
+                    }
+                    catch (ADOException ex)
+                    {
+                        if (!transaction.WasRolledBack) await transaction.RollbackAsync(); // will back our transaction
+
+
+                        var dbException = ADOExceptionHelper.ExtractDbException(ex) as SqlException;
+
+                        if (RetryPolicies.ExponentialBackOff.RetryOnLivelockAndDeadlock(retry).PerformRetry(dbException)) continue;
+                        throw new ORMException(dbException?.Message, ex);
+                    }
+                }
+            }
+        }
         /// <summary>
         /// Execute the statement in action wrapped by an ORM transaction. It commit (and in case of exception rollback) when action finish. After it close and destroy the transaction.
         /// </summary>
@@ -67,7 +105,7 @@ namespace bs.Data.Helpers
                 action();
                 if (uow.TransactionIsNotNull) uow.Commit();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 if (uow.TransactionIsNotNull) uow.Rollback();
                 throw new ORMException(ex.GetBaseException().Message, ex);
@@ -102,10 +140,10 @@ namespace bs.Data.Helpers
             {
                 uow.BeginTransaction();
                 var result = await func();
-                if (uow.TransactionIsNotNull)  await uow.CommitAsync();
+                if (uow.TransactionIsNotNull) await uow.CommitAsync();
                 return result;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 if (uow.TransactionIsNotNull) await uow.RollbackAsync();
                 throw new ORMException(ex.GetBaseException().Message, ex);
@@ -132,7 +170,7 @@ namespace bs.Data.Helpers
                 if (uow.TransactionIsNotNull) uow.Commit();
                 return result;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 if (uow.TransactionIsNotNull) uow.Rollback();
                 throw new ORMException(ex.GetBaseException().Message, ex);
