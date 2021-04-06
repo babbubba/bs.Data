@@ -28,37 +28,37 @@ namespace bs.Data.Helpers
         ///     };
         ///     await repo.CreateCountryAsync(country);
         /// }</code></example>
-        public static async Task RunInTransactionAsync(this IUnitOfWork uow, Action action)
-        {
-            if (uow is null)
-            {
-                throw new ORMException("Unit of work is not a valid instance, cannot run a new transaction");
-            }
-            if (uow.Session is null)
-            {
-                throw new ORMException("Unit of work has not a valid session instance, cannot run a new transaction");
-            }
+        //public static async Task RunInTransactionAsync(this IUnitOfWork uow, Action action)
+        //{
+        //    if (uow is null)
+        //    {
+        //        throw new ORMException("Unit of work is not a valid instance, cannot run a new transaction");
+        //    }
+        //    if (uow.Session is null)
+        //    {
+        //        throw new ORMException("Unit of work has not a valid session instance, cannot run a new transaction");
+        //    }
 
 
-            try
-            {
-                uow.BeginTransaction();
-                action();
+        //    try
+        //    {
+        //        uow.BeginTransaction();
+        //        action();
 
-                if (uow.TransactionIsNotNull) await uow.CommitAsync();
-            }
-            catch (Exception ex)
-            {
-                if (uow.TransactionIsNotNull) await uow.RollbackAsync();
-                throw new ORMException(ex.GetBaseException().Message, ex);
-            }
-            finally
-            {
-                if (uow.TransactionIsNotNull) uow.CloseTransaction();
-            }
-        }
+        //        if (uow.TransactionIsNotNull) await uow.CommitAsync();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        if (uow.TransactionIsNotNull) await uow.RollbackAsync();
+        //        throw new ORMException(ex.GetBaseException().Message, ex);
+        //    }
+        //    finally
+        //    {
+        //        if (uow.TransactionIsNotNull) uow.CloseTransaction();
+        //    }
+        //}
 
-        public static async Task RunInTransactionAsync(this IUnitOfWork uow, Action action, int retry)
+        public static async Task RunInTransactionAsync(this IUnitOfWork uow, Action action, int retry = 3)
         {
             if (uow is null)
             {
@@ -123,34 +123,44 @@ namespace bs.Data.Helpers
         /// <typeparam name="T">The return value Type.</typeparam>
         /// <param name="uow">The uow.</param>
         /// <param name="func">The function.</param>
+        /// <param name="retry">Hom many time retry in case of deadlock exception.</param>
+        /// <returns>
+        /// The function's return value
+        /// </returns>
+        /// <exception cref="ORMException"></exception>
         /// <example>
         /// You can use this in this way:<code>var entity = await uow.RunInTransactionAsync(async () =&gt;
         /// {
-        ///     var country = new CountryModel
-        ///     {
-        ///         Name = "Italy"
-        ///     };
-        ///     await repo.CreateCountryAsync(country);
-        ///     return country;
+        /// var country = new CountryModel
+        /// {
+        /// Name = "Italy"
+        /// };
+        /// await repo.CreateCountryAsync(country);
+        /// return country;
         /// }</code></example>
-        /// <returns>The function's return value</returns>
-        public static async Task<T> RunInTransactionAsync<T>(this IUnitOfWork uow, Func<Task<T>> func)
+        public static async Task<T> RunInTransactionAsync<T>(this IUnitOfWork uow, Func<Task<T>> func, int retry = 3)
         {
-            try
+            while (true)
             {
-                uow.BeginTransaction();
-                var result = await func();
-                if (uow.TransactionIsNotNull) await uow.CommitAsync();
-                return result;
-            }
-            catch (Exception ex)
-            {
-                if (uow.TransactionIsNotNull) await uow.RollbackAsync();
-                throw new ORMException(ex.GetBaseException().Message, ex);
-            }
-            finally
-            {
-                if (uow.TransactionIsNotNull) uow.CloseTransaction();
+                using (var transaction = uow.Session.BeginTransaction())
+                {
+                    try
+                    {
+                        var result = await func();
+                        await transaction.CommitAsync();
+                        return result; // stop looping
+                    }
+                    catch (ADOException ex)
+                    {
+                        if (!transaction.WasRolledBack) await transaction.RollbackAsync(); // will back our transaction
+
+
+                        var dbException = ADOExceptionHelper.ExtractDbException(ex) as SqlException;
+
+                        if (RetryPolicies.ExponentialBackOff.RetryOnLivelockAndDeadlock(retry).PerformRetry(dbException)) continue;
+                        throw new ORMException(dbException?.Message, ex);
+                    }
+                }
             }
         }
 
