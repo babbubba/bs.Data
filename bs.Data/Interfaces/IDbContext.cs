@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using NHibernate.Engine;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace bs.Data.Interfaces
@@ -103,5 +104,6 @@ namespace bs.Data.Interfaces
         /// The imports.
         /// </value>
         IDictionary<string, string> Imports { get; set; }
+        ICollection<FilterDefinition> Filters { get; set; }
     }
 }

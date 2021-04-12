@@ -70,11 +70,20 @@ namespace bs.Data
             var databaseIntegration = new NHibernate.Cfg.Loquacious.DbIntegrationConfigurationProperties(configuration);
           
             // import extra not persistent model
-            if(dbContext.Imports!=null)
+            if(!(dbContext.Imports is null))
             {
                 foreach (var import in dbContext.Imports)
                 {
                     configuration.Imports.Add(import);
+                }
+            }
+
+            if (!(dbContext.Filters is null))
+            {
+                foreach (var filter in dbContext.Filters)
+                {
+                    configuration.AddFilterDefinition(filter);
+
                 }
             }
 
