@@ -79,15 +79,25 @@ namespace bs.Data.Helpers
                         await transaction.CommitAsync();
                         break; // stop looping
                     }
-                    catch (ADOException ex)
+                    catch (SqlException sqlEx)
                     {
-                        if (!transaction.WasRolledBack) await transaction.RollbackAsync(); // will back our transaction
+                        if (!transaction.WasRolledBack) await transaction.RollbackAsync();
 
+                        // Try perform retry with exponential back off if this is a DeadLock exception
+                        if (RetryPolicies.ExponentialBackOff.RetryOnLivelockAndDeadlock(retry).PerformRetry(sqlEx)) continue;
 
-                        var dbException = ADOExceptionHelper.ExtractDbException(ex) as SqlException;
-
-                        if (RetryPolicies.ExponentialBackOff.RetryOnLivelockAndDeadlock(retry).PerformRetry(dbException)) continue;
-                        throw new ORMException(dbException?.Message, ex);
+                        // This was not a DeadLock exception so throw exception
+                        throw new ORMException(sqlEx?.Message, sqlEx, "SQL");
+                    }
+                    catch (ADOException AdoEx)
+                    {
+                        if (!transaction.WasRolledBack) await transaction.RollbackAsync();
+                        throw new ORMException(AdoEx?.Message, AdoEx, "ADO");
+                    }
+                    catch (Exception ex)
+                    {
+                        if (!transaction.WasRolledBack) await transaction.RollbackAsync();
+                        throw new ORMException(ex?.Message, ex, "GENERIC");
                     }
                 }
             }
@@ -140,6 +150,15 @@ namespace bs.Data.Helpers
         /// }</code></example>
         public static async Task<T> RunInTransactionAsync<T>(this IUnitOfWork uow, Func<Task<T>> func, int retry = 3)
         {
+            if (uow is null)
+            {
+                throw new ORMException("Unit of work is not a valid instance, cannot run a new transaction");
+            }
+            if (uow.Session is null)
+            {
+                throw new ORMException("Unit of work has not a valid session instance, cannot run a new transaction");
+            }
+
             while (true)
             {
                 using (var transaction = uow.Session.BeginTransaction())
@@ -150,16 +169,27 @@ namespace bs.Data.Helpers
                         await transaction.CommitAsync();
                         return result; // stop looping
                     }
-                    catch (ADOException ex)
+                    catch (SqlException sqlEx)
                     {
-                        if (!transaction.WasRolledBack) await transaction.RollbackAsync(); // will back our transaction
+                        if (!transaction.WasRolledBack) await transaction.RollbackAsync();
 
+                        // Try perform retry with exponential back off if this is a DeadLock exception
+                        if (RetryPolicies.ExponentialBackOff.RetryOnLivelockAndDeadlock(retry).PerformRetry(sqlEx)) continue;
 
-                        var dbException = ADOExceptionHelper.ExtractDbException(ex) as SqlException;
-
-                        if (RetryPolicies.ExponentialBackOff.RetryOnLivelockAndDeadlock(retry).PerformRetry(dbException)) continue;
-                        throw new ORMException(dbException?.Message, ex);
+                        // This was not a DeadLock exception so throw exception
+                        throw new ORMException(sqlEx?.Message, sqlEx, "SQL");
                     }
+                    catch (ADOException AdoEx)
+                    {
+                        if (!transaction.WasRolledBack) await transaction.RollbackAsync(); 
+                        throw new ORMException(AdoEx?.Message, AdoEx, "ADO");
+                    }
+                    catch (Exception ex)
+                    {
+                        if (!transaction.WasRolledBack) await transaction.RollbackAsync(); 
+                        throw new ORMException(ex?.Message, ex, "GENERIC");
+                    }
+
                 }
             }
         }
@@ -180,10 +210,20 @@ namespace bs.Data.Helpers
                 if (uow.TransactionIsNotNull) uow.Commit();
                 return result;
             }
+            catch (SqlException sqlEx)
+            {
+                if (uow.TransactionIsNotNull) uow.Rollback();
+                throw new ORMException(sqlEx?.Message, sqlEx, "SQL");
+            }
+            catch (ADOException AdoEx)
+            {
+                if (uow.TransactionIsNotNull) uow.Rollback();
+                throw new ORMException(AdoEx?.Message, AdoEx, "ADO");
+            }
             catch (Exception ex)
             {
                 if (uow.TransactionIsNotNull) uow.Rollback();
-                throw new ORMException(ex.GetBaseException().Message, ex);
+                throw new ORMException(ex.GetBaseException().Message, ex, "GENERIC");
             }
             finally
             {

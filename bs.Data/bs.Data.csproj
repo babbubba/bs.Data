@@ -7,9 +7,9 @@
     <Company>bSoft</Company>
     <Description>Nhibernate based Repository with facilities.
 Supports: SqlServer, MySql, Sqlite, PostgreeSql</Description>
-    <AssemblyVersion>3.21.4.21</AssemblyVersion>
-    <FileVersion>3.21.4.21</FileVersion>
-    <Version>3.2.3</Version>
+    <AssemblyVersion>3.21.5.6</AssemblyVersion>
+    <FileVersion>3.21.5.6</FileVersion>
+    <Version>3.2.4</Version>
     <Copyright>Fabio Cavallari @ bSoft</Copyright>
     <PackageProjectUrl>https://github.com/babbubba/bs.Data</PackageProjectUrl>
     <RepositoryUrl>https://github.com/babbubba/bs.Data</RepositoryUrl>
