@@ -95,6 +95,11 @@ namespace bs.Data
                     databaseIntegration.ConnectionString = dbContext.ConnectionString;
                     break;
 
+                case DbType.MySQL57:
+                    databaseIntegration.Dialect<MySQL57Dialect>();
+                    databaseIntegration.ConnectionString = dbContext.ConnectionString;
+                    break;
+
                 case DbType.SQLite:
                     databaseIntegration.Driver<NHibernate.Driver.SQLite20Driver>();
                     databaseIntegration.Dialect<SQLiteDialect>();
@@ -115,6 +120,11 @@ namespace bs.Data
 
                 case DbType.PostgreSQL:
                     databaseIntegration.Dialect<PostgreSQL82Dialect>();
+                    databaseIntegration.ConnectionString = dbContext.ConnectionString;
+                    break;
+
+                case DbType.PostgreSQL83:
+                    databaseIntegration.Dialect<PostgreSQL83Dialect>();
                     databaseIntegration.ConnectionString = dbContext.ConnectionString;
                     break;
 

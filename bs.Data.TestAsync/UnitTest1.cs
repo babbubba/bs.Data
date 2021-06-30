@@ -95,22 +95,24 @@ namespace bs.Data.TestAsync
 
                 await repo.UpdatePersonAsync(person2);
 
-                var rooms = new List<RoomModel>();
-                rooms.Add(new RoomModel
+                var rooms = new List<RoomModel>
                 {
-                    Name = "RECEPTION",
-                    Persons = new PersonModel[] { person1, person2 }
-                });
-                rooms.Add(new RoomModel
-                {
-                    Name = "ADMINISTRATION",
-                    Persons = new PersonModel[] { person2 }
-                });
-                rooms.Add(new RoomModel
-                {
-                    Name = "ICT",
-                    Persons = new PersonModel[] { person1 }
-                });
+                    new RoomModel
+                    {
+                        Name = "RECEPTION",
+                        Persons = new PersonModel[] { person1, person2 }
+                    },
+                    new RoomModel
+                    {
+                        Name = "ADMINISTRATION",
+                        Persons = new PersonModel[] { person2 }
+                    },
+                    new RoomModel
+                    {
+                        Name = "ICT",
+                        Persons = new PersonModel[] { person1 }
+                    }
+                };
 
                 rooms.ForEach(async a => await repo.CreateRoomAsync(a));
             });
@@ -220,22 +222,24 @@ namespace bs.Data.TestAsync
 
                 await repo.UpdatePersonAsync(person2);
 
-                var rooms = new List<RoomModel>();
-                rooms.Add(new RoomModel
+                var rooms = new List<RoomModel>
                 {
-                    Name = "RECEPTION",
-                    Persons = new PersonModel[] { person1, person2 }
-                });
-                rooms.Add(new RoomModel
-                {
-                    Name = "ADMINISTRATION",
-                    Persons = new PersonModel[] { person2 }
-                });
-                rooms.Add(new RoomModel
-                {
-                    Name = "ICT",
-                    Persons = new PersonModel[] { person1 }
-                });
+                    new RoomModel
+                    {
+                        Name = "RECEPTION",
+                        Persons = new PersonModel[] { person1, person2 }
+                    },
+                    new RoomModel
+                    {
+                        Name = "ADMINISTRATION",
+                        Persons = new PersonModel[] { person2 }
+                    },
+                    new RoomModel
+                    {
+                        Name = "ICT",
+                        Persons = new PersonModel[] { person1 }
+                    }
+                };
 
                 rooms.ForEach(async a => await repo.CreateRoomAsync(a));
 

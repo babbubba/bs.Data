@@ -7,8 +7,11 @@ namespace bs.Data.Interfaces
         [Description("Undefined")]
         Undefined = 0,
 
-        [Description("MySql Server")]
+        [Description("MySql Server 5.5")]
         MySQL = 10,
+
+        [Description("MySql Server 5.7")]
+        MySQL57 = 12,
 
         [Description("SQlite")]
         SQLite = 20,
@@ -20,6 +23,9 @@ namespace bs.Data.Interfaces
         MsSql2008 = 40,
 
         [Description("PostgreSQL")]
-        PostgreSQL = 50
+        PostgreSQL = 50,
+
+        [Description("PostgreSQL 8.3")]
+        PostgreSQL83 = 52
     }
 }
