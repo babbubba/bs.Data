@@ -58,8 +58,8 @@ namespace bs.Data.Helpers
             if (useExecutingAssemblyToo)
             {
                 var lst = new List<Assembly>();
-                lst.AddRange(AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.FullName.Contains("Microsoft") && !a.FullName.Contains("PresentationCore")));
-                lst.AddRange(allAssemblies);
+                lst.AddRange(AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.FullName.Contains("Microsoft", StringComparison.InvariantCultureIgnoreCase) && !a.FullName.Contains("PresentationCore", StringComparison.InvariantCultureIgnoreCase)));
+                lst.AddRange(allAssemblies.Where(a => !a.FullName.Contains("Microsoft", StringComparison.InvariantCultureIgnoreCase) && !a.FullName.Contains("PresentationCore", StringComparison.InvariantCultureIgnoreCase)));
                 allAssemblies = lst;
             }
 
