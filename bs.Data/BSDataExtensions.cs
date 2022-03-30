@@ -175,7 +175,13 @@ namespace bs.Data
             try
             {
                 services.AddSingleton(sessionFactory);
-                services.AddScoped(factory => sessionFactory.OpenSession());
+                //services.AddScoped(factory => sessionFactory.OpenSession());
+
+                services.AddScoped((provider) => {
+                    // Replace the current instance of session factory with the injected one... it may help DI to avoid premature destruction of the session
+                    var factory = provider.GetService<ISessionFactory>();
+                    return factory.OpenSession();
+                });
                 services.AddScoped<IUnitOfWork, UnitOfWork>();
             }
             catch (System.Exception ex)
