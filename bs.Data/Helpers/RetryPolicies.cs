@@ -4,11 +4,17 @@ using System;
 namespace bs.Data.Helpers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <seealso cref="bs.Data.Interfaces.INotConfiguredPolicy" />
     internal class RetryPolicies : INotConfiguredPolicy
     {
+        /// <summary>
+        /// The exponential back off
+        /// </summary>
+        public static readonly INotConfiguredPolicy ExponentialBackOff =
+            new RetryPolicies(new ExponentialBackOffPolicy(TimeSpan.FromMilliseconds(200)));
+
         private readonly IRetryPolicy policy;
 
         /// <summary>
@@ -21,12 +27,6 @@ namespace bs.Data.Helpers
             if (policy == null) throw new ArgumentNullException("policy");
             this.policy = policy;
         }
-
-        /// <summary>
-        /// The exponential back off
-        /// </summary>
-        public static readonly INotConfiguredPolicy ExponentialBackOff =
-            new RetryPolicies(new ExponentialBackOffPolicy(TimeSpan.FromMilliseconds(200)));
 
         /// <summary>
         /// Retries the on livelock and deadlock.

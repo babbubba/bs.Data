@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 
 namespace bs.Data.Helpers
 {
-    public static class ReflectionHelper
+    internal static class ReflectionHelper
     {
         /// <summary>Gets the assemblies that contains one or more implementations of the interface 'IPersisterEntity' from the specified DLLs dinamically loaded. If the same assembly is present in more than one DLL file it will be loaded once (the first time only).</summary>
         /// <param name="foldersWhereLookingForDll">The folders where recursively (current folder and sub folders) looking for DLL files.</param>

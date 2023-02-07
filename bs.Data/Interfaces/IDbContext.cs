@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace bs.Data.Interfaces
 {
     /// <summary>
-    ///
+    /// The ORM configuration
     /// </summary>
     public interface IDbContext
     {

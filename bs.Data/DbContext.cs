@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace bs.Data
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <seealso cref="bs.Data.Interfaces.IDbContext" />
     public class DbContext : IDbContext
@@ -26,41 +26,7 @@ namespace bs.Data
         /// The connection string.
         /// </value>
         public string ConnectionString { get; set; }
-        /// <summary>
-        /// Gets or sets the type of the database engine.
-        /// </summary>
-        /// <value>
-        /// The type of the database engine.
-        /// </value>
-        public DbType DatabaseEngineType { get; set; }
-        /// <summary>
-        /// Gets or sets the folders where looking for entities DLL (for example external model in external libraries).
-        /// </summary>
-        /// <value>
-        /// The folders where looking for entities DLL.
-        /// </value>
-        public string[] FoldersWhereLookingForEntitiesDll { get; set; }
-        /// <summary>
-        /// Gets or sets the patterns used to search for libraries to treath as entities in the folders setted in the 'FoldersWhereLookingForEntitiesDll' field.
-        /// </summary>
-        /// <value>
-        /// The entities file name scanner patterns.
-        /// </value>
-        public string[] EntitiesFileNameScannerPatterns { get; set; }
-        /// <summary>
-        /// Gets or sets a value indicating whether [look for entities DLL in current directory too].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [look for entities DLL in current directory too]; otherwise, <c>false</c>.
-        /// </value>
-        public bool LookForEntitiesDllInCurrentDirectoryToo { get; set; }
-        /// <summary>
-        /// Gets or sets a value indicating whether [use executing assembly too] to search entities.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [use executing assembly too]; otherwise, <c>false</c>.
-        /// </value>
-        public bool UseExecutingAssemblyToo { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether the database schema will be created.
         /// </summary>
@@ -68,20 +34,41 @@ namespace bs.Data
         ///   <c>true</c> if create; otherwise, <c>false</c>.
         /// </value>
         public bool Create { get; set; }
+
         /// <summary>
-        /// Gets or sets a value indicating whether the database schema will be update.
+        /// Gets or sets the type of the database engine.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if update; otherwise, <c>false</c>.
+        /// The type of the database engine.
         /// </value>
-        public bool Update { get; set; }
+        public DbType DatabaseEngineType { get; set; }
+
         /// <summary>
-        /// Gets or sets the number of inserts or writes to database that will be executed in unique roundtrip.
+        /// Gets or sets the patterns used to search for libraries to treath as entities in the folders setted in the 'FoldersWhereLookingForEntitiesDll' field.
         /// </summary>
         /// <value>
-        /// The size of the set batch.
+        /// The entities file name scanner patterns.
         /// </value>
-        public short SetBatchSize { get; set; }
+        public string[] EntitiesFileNameScannerPatterns { get; set; }
+
+        public ICollection<FilterDefinition> Filters { get; set; }
+
+        /// <summary>
+        /// Gets or sets the folders where looking for entities DLL (for example external model in external libraries).
+        /// </summary>
+        /// <value>
+        /// The folders where looking for entities DLL.
+        /// </value>
+        public string[] FoldersWhereLookingForEntitiesDll { get; set; }
+
+        /// <summary>
+        /// Gets or sets the classes to imports to use as Model in CreateQuery (entityName/className -> AssemblyQualifiedName).
+        /// </summary>
+        /// <value>
+        /// The imports.
+        /// </value>
+        public IDictionary<string, string> Imports { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether [log formatted SQL].
         /// </summary>
@@ -89,6 +76,7 @@ namespace bs.Data
         ///   <c>true</c> if [log formatted SQL]; otherwise, <c>false</c>.
         /// </value>
         public bool LogFormattedSql { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether [log SQL in console].
         /// </summary>
@@ -98,13 +86,35 @@ namespace bs.Data
         public bool LogSqlInConsole { get; set; }
 
         /// <summary>
-        /// Gets or sets the classes to imports to use as Model in CreateQuery (entityName/className -> AssemblyQualifiedName).
+        /// Gets or sets a value indicating whether [look for entities DLL in current directory too].
         /// </summary>
         /// <value>
-        /// The imports.
+        ///   <c>true</c> if [look for entities DLL in current directory too]; otherwise, <c>false</c>.
         /// </value>
-        public IDictionary<string, string> Imports { get; set ; }
+        public bool LookForEntitiesDllInCurrentDirectoryToo { get; set; }
 
-        public ICollection<FilterDefinition> Filters { get; set; }
+        /// <summary>
+        /// Gets or sets the number of inserts or writes to database that will be executed in unique roundtrip.
+        /// </summary>
+        /// <value>
+        /// The size of the set batch.
+        /// </value>
+        public short SetBatchSize { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the database schema will be update.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if update; otherwise, <c>false</c>.
+        /// </value>
+        public bool Update { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [use executing assembly too] to search entities.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [use executing assembly too]; otherwise, <c>false</c>.
+        /// </value>
+        public bool UseExecutingAssemblyToo { get; set; }
     }
 }

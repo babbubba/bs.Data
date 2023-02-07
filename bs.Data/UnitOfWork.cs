@@ -12,10 +12,8 @@ namespace bs.Data
     /// <seealso cref="bs.Data.Interfaces.IUnitOfWork" />
     public sealed class UnitOfWork : IUnitOfWork
     {
-        private ITransaction transaction;
         private bool disposedValue;
-
-        public ISession Session { get; }
+        private ITransaction transaction;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UnitOfWork"/> class.
@@ -26,8 +24,8 @@ namespace bs.Data
             this.Session = session;
         }
 
+        public ISession Session { get; }
         public bool TransactionIsNotNull => !(transaction is null);
-
 
         /// <summary>
         /// Begins the transaction.
@@ -58,7 +56,7 @@ namespace bs.Data
         /// </summary>
         public void Commit()
         {
-            if (!(transaction?.WasRolledBack ?? true))  transaction.Commit();
+            if (!(transaction?.WasRolledBack ?? true)) transaction.Commit();
         }
 
         /// <summary>
@@ -67,80 +65,6 @@ namespace bs.Data
         public async Task CommitAsync()
         {
             if (!(transaction?.WasRolledBack ?? true)) await transaction.CommitAsync();
-        }
-
-        /// <summary>
-        /// Rollbacks the current transaction in this session
-        /// </summary>
-        public void Rollback()
-        {
-            if (!(transaction?.WasCommitted ?? true)) transaction.Rollback();
-        }
-
-        /// <summary>
-        /// Rollbacks the current transaction in this session asynchronously.
-        /// </summary>
-        public async Task RollbackAsync()
-        {
-            if (!(transaction?.WasCommitted ?? true)) await transaction.RollbackAsync();
-        }
-
-        /// <summary>
-        /// Tries to commit the current transaction in this session if exception occurs rollback transaction asynchronously and throw the exception.
-        /// </summary>
-        public async Task TryCommitOrRollbackAsync()
-        {
-            try
-            {
-                await CommitAsync();
-            }
-            catch
-            {
-                await RollbackAsync();
-                throw;
-            }
-            finally
-            {
-                CloseTransaction();
-            }
-        }
-
-        /// <summary>
-        /// Tries to commit the current transaction in this session if exception occurs rollback transaction and throw the exception.
-        /// </summary>
-        public void TryCommitOrRollback()
-        {
-            try
-            {
-                Commit();
-            }
-            catch
-            {
-                Rollback();
-                throw;
-            }
-            finally
-            {
-                CloseTransaction();
-            }
-        }
-
-        private void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    if (transaction != null && transaction.IsActive)
-                    {
-                        TryCommitOrRollback();
-                    }
-
-                    Session?.Dispose();
-                }
-
-                disposedValue = true;
-            }
         }
 
         /// <summary>
@@ -165,7 +89,80 @@ namespace bs.Data
                 Dispose(false);
                 GC.SuppressFinalize(this);
             }
-                
+        }
+
+        /// <summary>
+        /// Rollbacks the current transaction in this session
+        /// </summary>
+        public void Rollback()
+        {
+            if (!(transaction?.WasCommitted ?? true)) transaction.Rollback();
+        }
+
+        /// <summary>
+        /// Rollbacks the current transaction in this session asynchronously.
+        /// </summary>
+        public async Task RollbackAsync()
+        {
+            if (!(transaction?.WasCommitted ?? true)) await transaction.RollbackAsync();
+        }
+
+        /// <summary>
+        /// Tries to commit the current transaction in this session if exception occurs rollback transaction and throw the exception.
+        /// </summary>
+        public void TryCommitOrRollback()
+        {
+            try
+            {
+                Commit();
+            }
+            catch
+            {
+                Rollback();
+                throw;
+            }
+            finally
+            {
+                CloseTransaction();
+            }
+        }
+
+        /// <summary>
+        /// Tries to commit the current transaction in this session if exception occurs rollback transaction asynchronously and throw the exception.
+        /// </summary>
+        public async Task TryCommitOrRollbackAsync()
+        {
+            try
+            {
+                await CommitAsync();
+            }
+            catch
+            {
+                await RollbackAsync();
+                throw;
+            }
+            finally
+            {
+                CloseTransaction();
+            }
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    if (transaction != null && transaction.IsActive)
+                    {
+                        TryCommitOrRollback();
+                    }
+
+                    Session?.Dispose();
+                }
+
+                disposedValue = true;
+            }
         }
     }
 }

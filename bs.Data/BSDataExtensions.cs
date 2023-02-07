@@ -22,12 +22,12 @@ namespace bs.Data
         {
             if (services is null)
             {
-                throw new System.ArgumentNullException(nameof(services),"ServiceCollection is mandatory to handle dependency injection in consumer application");
+                throw new System.ArgumentNullException(nameof(services), "ServiceCollection is mandatory to handle dependency injection in consumer application");
             }
 
             if (dbContext is null)
             {
-                throw new System.ArgumentNullException(nameof(dbContext),"The context is mandatory to init the ORM");
+                throw new System.ArgumentNullException(nameof(dbContext), "The context is mandatory to init the ORM");
             }
 
             if (dbContext.DatabaseEngineType == DbType.Undefined)
@@ -45,7 +45,6 @@ namespace bs.Data
 
             // Add the entities defined in this assemblies
             mapper.AddMappings(typeof(BSDataExtensions).Assembly.ExportedTypes);
-           
 
             // Add the entities defined in other assemblies
             try
@@ -62,15 +61,13 @@ namespace bs.Data
             // Compile mapped entities
             HbmMapping domainMapping = mapper.CompileMappingForAllExplicitlyAddedEntities();
             domainMapping.autoimport = true;
-            
-       
 
             // Prepares configuration
             var configuration = new Configuration();
             var databaseIntegration = new NHibernate.Cfg.Loquacious.DbIntegrationConfigurationProperties(configuration);
-          
+
             // import extra not persistent model
-            if(!(dbContext.Imports is null))
+            if (!(dbContext.Imports is null))
             {
                 foreach (var import in dbContext.Imports)
                 {
@@ -83,7 +80,6 @@ namespace bs.Data
                 foreach (var filter in dbContext.Filters)
                 {
                     configuration.AddFilterDefinition(filter);
-
                 }
             }
 
@@ -150,7 +146,7 @@ namespace bs.Data
             try
             {
                 configuration.AddMapping(domainMapping);
-            }        
+            }
             catch (System.Exception ex)
             {
                 throw new ORMException("Error adding mappings to ORM. See inner exceptions for details.", ex);
@@ -177,7 +173,8 @@ namespace bs.Data
                 services.AddSingleton(sessionFactory);
                 //services.AddScoped(factory => sessionFactory.OpenSession());
 
-                services.AddScoped((provider) => {
+                services.AddScoped((provider) =>
+                {
                     // Replace the current instance of session factory with the injected one... it may help DI to avoid premature destruction of the session
                     var factory = provider.GetService<ISessionFactory>();
                     return factory.OpenSession();

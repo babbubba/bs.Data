@@ -20,11 +20,23 @@ namespace bs.Data.Interfaces
         /// </value>
         ISession Session { get; }
 
+        /// <summary>
+        /// Gets a value indicating whether [transaction is not null].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [transaction is not null]; otherwise, <c>false</c>.
+        /// </value>
         bool TransactionIsNotNull { get; }
+
         /// <summary>
         /// Begins the transaction.
         /// </summary>
         void BeginTransaction();
+
+        /// <summary>
+        /// Closes current transaction.
+        /// </summary>
+        void CloseTransaction();
 
         /// <summary>
         /// Commits the current transaction in this session
@@ -58,10 +70,5 @@ namespace bs.Data.Interfaces
         /// </summary>
         /// <returns></returns>
         Task TryCommitOrRollbackAsync();
-
-        /// <summary>
-        /// Closes current transaction.
-        /// </summary>
-        void CloseTransaction();
     }
 }

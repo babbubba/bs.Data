@@ -6,8 +6,8 @@ namespace bs.Data.Helpers
 {
     internal class SqlServerRetryPolicy : IRetryPolicy
     {
-        private int tries;
         private readonly int maxRetry;
+        private int tries;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqlServerRetryPolicy"/> class.

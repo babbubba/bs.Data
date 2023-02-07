@@ -2,6 +2,9 @@
 
 namespace bs.Data.Interfaces
 {
+    /// <summary>
+    /// The type of DB to use
+    /// </summary>
     public enum DbType
     {
         [Description("Undefined")]

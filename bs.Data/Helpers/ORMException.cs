@@ -9,7 +9,6 @@ namespace bs.Data.Helpers
     /// <seealso cref="System.Exception" />
     public class ORMException : Exception
     {
-        public string ExceptionOrigin { get; }
         /// <summary>
         /// Initializes a new instance of the <see cref="ORMException"/> class.
         /// </summary>
@@ -53,5 +52,7 @@ namespace bs.Data.Helpers
         protected ORMException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
+
+        public string ExceptionOrigin { get; }
     }
 }

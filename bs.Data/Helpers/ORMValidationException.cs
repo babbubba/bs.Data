@@ -11,14 +11,6 @@ namespace bs.Data.Helpers
     public class ORMValidationException : ORMException
     {
         /// <summary>
-        /// Gets or sets the validation errors.
-        /// </summary>
-        /// <value>
-        /// The validation errors.
-        /// </value>
-        public IReadOnlyCollection<string> ValidationErrors { get; set; }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="ORMValidationException"/> class.
         /// </summary>
         public ORMValidationException()
@@ -50,5 +42,13 @@ namespace bs.Data.Helpers
         protected ORMValidationException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
+
+        /// <summary>
+        /// Gets or sets the validation errors.
+        /// </summary>
+        /// <value>
+        /// The validation errors.
+        /// </value>
+        public IReadOnlyCollection<string> ValidationErrors { get; set; }
     }
 }
