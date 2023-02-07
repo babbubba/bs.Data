@@ -21,81 +21,80 @@ namespace bs.Data.TestAsync
             var uow = serviceProvider.GetService<IUnitOfWork>();
             var repo = serviceProvider.GetService<BsDataRepository>();
 
-            await uow.RunInTransactionAsync(async () =>
+            uow.BeginTransaction();
+            var country = new CountryModel
             {
-                var country = new CountryModel
-                {
-                    Name = "Italy"
-                };
-                await repo.CreateCountryAsync(country);
+                Name = "Italy"
+            };
+            await repo.CreateCountryAsync(country);
 
-                var person1 = new PersonModel
-                {
-                    Name = "Fabio",
-                    Lastname = "Cavallari",
-                    Age = 40,
-                    ContactDate = new DateTime(2020, 9, 2),
-                    Description = "Simply me",
-                    Photo = new byte[] { 12, 34, 76, 250, 1, 0, 44, 2 }
-                };
-                await repo.CreatePersonAsync(person1);
+            var person1 = new PersonModel
+            {
+                Name = "Fabio",
+                Lastname = "Cavallari",
+                Age = 40,
+                ContactDate = new DateTime(2020, 9, 2),
+                Description = "Simply me",
+                Photo = new byte[] { 12, 34, 76, 250, 1, 0, 44, 2 }
+            };
+            await repo.CreatePersonAsync(person1);
 
-                var p1a1 = new AddressModel
-                {
-                    Country = country,
-                    PostalCode = "12345",
-                    StreetName = "Via liguria, 34/12",
-                    Person = person1
-                };
-                await repo.CreateAddressAsync(p1a1);
-                person1.Addresses.Add(p1a1);
+            var p1a1 = new AddressModel
+            {
+                Country = country,
+                PostalCode = "12345",
+                StreetName = "Via liguria, 34/12",
+                Person = person1
+            };
+            await repo.CreateAddressAsync(p1a1);
+            person1.Addresses.Add(p1a1);
 
-                var p1a2 = new AddressModel
-                {
-                    Country = country,
-                    PostalCode = "6789",
-                    StreetName = "Corso del popolo, 112",
-                    Person = person1
-                };
-                await repo.CreateAddressAsync(p1a2);
-                person1.Addresses.Add(p1a2);
+            var p1a2 = new AddressModel
+            {
+                Country = country,
+                PostalCode = "6789",
+                StreetName = "Corso del popolo, 112",
+                Person = person1
+            };
+            await repo.CreateAddressAsync(p1a2);
+            person1.Addresses.Add(p1a2);
 
-                await repo.UpdatePersonAsync(person1);
+            await repo.UpdatePersonAsync(person1);
 
-                var person2 = new PersonModel
-                {
-                    Name = "Pinco",
-                    Lastname = "Pallino",
-                    Age = 28,
-                    ContactDate = new DateTime(2018, 9, 2),
-                    Description = "Simply no one",
-                    Photo = new byte[] { 60, 22, 115, 250, 20, 7, 44, 3 }
-                };
-                await repo.CreatePersonAsync(person2);
+            var person2 = new PersonModel
+            {
+                Name = "Pinco",
+                Lastname = "Pallino",
+                Age = 28,
+                ContactDate = new DateTime(2018, 9, 2),
+                Description = "Simply no one",
+                Photo = new byte[] { 60, 22, 115, 250, 20, 7, 44, 3 }
+            };
+            await repo.CreatePersonAsync(person2);
 
-                var p2a1 = new AddressModel
-                {
-                    Country = country,
-                    PostalCode = "666",
-                    StreetName = "Via carlo rosselli, 2",
-                    Person = person2
-                };
-                await repo.CreateAddressAsync(p2a1);
-                person2.Addresses.Add(p2a1);
+            var p2a1 = new AddressModel
+            {
+                Country = country,
+                PostalCode = "666",
+                StreetName = "Via carlo rosselli, 2",
+                Person = person2
+            };
+            await repo.CreateAddressAsync(p2a1);
+            person2.Addresses.Add(p2a1);
 
-                var p2a2 = new AddressModel
-                {
-                    Country = country,
-                    PostalCode = "321",
-                    StreetName = "Corso francia, 1112",
-                    Person = person2
-                };
-                await repo.CreateAddressAsync(p2a2);
-                person2.Addresses.Add(p2a2);
+            var p2a2 = new AddressModel
+            {
+                Country = country,
+                PostalCode = "321",
+                StreetName = "Corso francia, 1112",
+                Person = person2
+            };
+            await repo.CreateAddressAsync(p2a2);
+            person2.Addresses.Add(p2a2);
 
-                await repo.UpdatePersonAsync(person2);
+            await repo.UpdatePersonAsync(person2);
 
-                var rooms = new List<RoomModel>
+            var rooms = new List<RoomModel>
                 {
                     new RoomModel
                     {
@@ -114,23 +113,18 @@ namespace bs.Data.TestAsync
                     }
                 };
 
-                rooms.ForEach(async a => await repo.CreateRoomAsync(a));
-            });
+            rooms.ForEach(async a => await repo.CreateRoomAsync(a));
+            await uow.TryCommitOrRollbackAsync();
 
-            await uow.RunInTransactionAsync(async () =>
-            {
-                var personsRet = repo.GetPersons();
-                repo.DeletePersonLogically(personsRet.Last());
-            });
-
-            await uow.RunInTransactionAsync(async () =>
-        {
-                //var personsRet = await repo.GetPersonsAsync();
-                var personsRet = repo.GetPersonsLogicallyNotDeleted();
-                //var addressRet = await repo.GetAddressesAsync();
-                //var roomsRet = await repo.GetRoomsAsync();
-                Assert.NotNull(personsRet.FirstOrDefault());
-        });
+            uow.BeginTransaction();
+            var personsRet = (await repo.GetPersonsAsync()).ToList();
+            repo.DeletePersonLogically(personsRet.Last());
+            await uow.TryCommitOrRollbackAsync();
+            
+            uow.BeginTransaction();
+            var personsRet2 = await repo.GetPersonsLogicallyNotDeletedAsync();
+            Assert.NotNull(personsRet.FirstOrDefault());
+            await uow.TryCommitOrRollbackAsync();
         }
 
 

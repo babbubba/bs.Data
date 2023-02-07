@@ -21,9 +21,15 @@ namespace bs.Data.TestAsync
             return Query<PersonModel>();
         }
 
+
         public IEnumerable<PersonModel> GetPersonsLogicallyNotDeleted()
         {
             return QueryLogicallyNotDeleted<PersonModel>();
+        }
+
+        public async Task<IEnumerable<PersonModel>> GetPersonsLogicallyNotDeletedAsync()
+        {
+            return await QueryLogicallyNotDeleted<PersonModel>().ToListAsync();
         }
 
         public IEnumerable<PersonModel> GetPersonsLogicallyDeleted()
