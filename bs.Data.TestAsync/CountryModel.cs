@@ -1,7 +1,5 @@
 ﻿using bs.Data.Interfaces.BaseEntities;
-using NHibernate;
-using NHibernate.Mapping.ByCode;
-using NHibernate.Mapping.ByCode.Conformist;
+using bs.Data.Mapping;
 using System;
 
 namespace bs.Data.TestAsync
@@ -13,20 +11,12 @@ namespace bs.Data.TestAsync
         public virtual string Name { get; set; }
     }
 
-    public class CountryModelMap : ClassMapping<CountryModel>
+    public class CountryModelMap : BsClassMapping<CountryModel>
     {
         public CountryModelMap()
         {
             Table("Countries");
-
-            Id(x => x.Id, x =>
-            {
-                x.Generator(Generators.Guid);
-                x.Type(NHibernateUtil.Guid);
-                x.Column("Id");
-                x.UnsavedValue(Guid.Empty);
-            });
-
+            GuidId(x => x.Id);
             Property(b => b.Name, map => map.Length(50));
         }
     }

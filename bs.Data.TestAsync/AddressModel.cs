@@ -1,4 +1,5 @@
 ﻿using bs.Data.Interfaces.BaseEntities;
+using bs.Data.Mapping;
 using NHibernate;
 using NHibernate.Mapping.ByCode;
 using NHibernate.Mapping.ByCode.Conformist;
@@ -15,30 +16,17 @@ namespace bs.Data.TestAsync
         public virtual CountryModel Country { get; set; }
     }
 
-    public class AddressModelMap : ClassMapping<AddressModel>
+    public class AddressModelMap : BsClassMapping<AddressModel>
     {
         public AddressModelMap()
         {
             Table("Addresses");
-            Id(x => x.Id, x =>
-            {
-                x.Generator(Generators.Guid);
-                x.Type(NHibernateUtil.Guid);
-                x.Column("Id");
-                x.UnsavedValue(Guid.Empty);
-            });
-            ManyToOne(x => x.Person, map =>
-            {
-                map.Column("PersonId");
-                map.ForeignKey("FK__Addresses_Persons");
-            });
+            GuidId(x => x.Id);
+            SetManyToOne(x => x.Person, "PersonId","FK__Addresses_Person");
             Property(b => b.StreetName, map => map.Length(90));
             Property(b => b.PostalCode, map => map.Length(10));
-            ManyToOne(x => x.Country, map =>
-            {
-                map.Column("CountryId");
-                map.ForeignKey("FK__Addresses_Countries");
-            });
+            SetManyToOne(x => x.Country, "CountryId", "FK_Addresses_Country");
+
         }
     }
 }
