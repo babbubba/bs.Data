@@ -1,4 +1,5 @@
 ﻿using bs.Data.Interfaces.BaseEntities;
+using bs.Data.Mapping;
 using NHibernate;
 using NHibernate.Mapping.ByCode;
 using NHibernate.Mapping.ByCode.Conformist;
@@ -26,19 +27,12 @@ namespace bs.Data.TestAsync
         public virtual DateTime? DeletionDate { get; set; }
     }
 
-    public class PersonModelMap : ClassMapping<PersonModel>
+    public class PersonModelMap : BsClassMapping<PersonModel>
     {
         public PersonModelMap()
         {
             Table("Persons");
-
-            Id(x => x.Id, x =>
-            {
-                x.Generator(Generators.Guid);
-                x.Type(NHibernateUtil.Guid);
-                x.Column("Id");
-                x.UnsavedValue(Guid.Empty);
-            });
+            GuidId(x => x.Id);
             Property(b => b.Name, map => map.Length(25));
             Property(b => b.Lastname, map => map.Length(25));
             Property(b => b.Age);
@@ -53,25 +47,8 @@ namespace bs.Data.TestAsync
             {
                 x.Type(NHibernateUtil.BinaryBlob);
             });
-
-            Bag(x => x.Addresses, m =>
-            {
-                m.Inverse(true);
-                m.Key(km => km.Column("PersonId"));
-            },
-            map => map.OneToMany(a => a.Class(typeof(AddressModel))));
-
-            Bag(x => x.Rooms, m =>
-            {
-                m.Table("PersonsRooms");
-                m.Key(k => k.Column("PersonId"));
-            },
-            map => map.ManyToMany(p =>
-            {
-                p.Class(typeof(RoomModel));
-                p.Column("RoomId");
-            }));
-
+            SetOneToMany(p => p.Addresses, "PersonId", typeof(AddressModel));
+            SetManyToMany(p => p.Rooms, "PersonsRoomsLink", "PersonId", "RoomId", typeof(RoomModel), false);
             Property(b => b.IsDeleted);
             Property(b => b.DeletionDate);
         }

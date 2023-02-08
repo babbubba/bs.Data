@@ -1,4 +1,5 @@
 ﻿using bs.Data.Interfaces.BaseEntities;
+using bs.Data.Mapping;
 using NHibernate;
 using NHibernate.Mapping.ByCode;
 using NHibernate.Mapping.ByCode.Conformist;
@@ -14,31 +15,14 @@ namespace bs.Data.TestAsync
         public virtual IEnumerable<PersonModel> Persons { get; set; }
     }
 
-    public class RoomModelMap : ClassMapping<RoomModel>
+    public class RoomModelMap : BsClassMapping<RoomModel>
     {
         public RoomModelMap()
         {
             Table("Rooms");
-
-            Id(x => x.Id, x =>
-            {
-                x.Generator(Generators.Guid);
-                x.Type(NHibernateUtil.Guid);
-                x.Column("Id");
-                x.UnsavedValue(Guid.Empty);
-            });
+            GuidId(x=>x.Id);
             Property(b => b.Name, map => map.Length(25));
-
-            Bag(x => x.Persons, m =>
-             {
-                 m.Table("PersonsRooms");
-                 m.Key(k => k.Column("RoomId"));
-             },
-             map => map.ManyToMany(p =>
-              {
-                  p.Class(typeof(PersonModel));
-                  p.Column("PersonId");
-              }));
+            SetManyToMany(p => p.Persons, "PersonsRoomsLink",  "RoomId", "PersonId", typeof(PersonModel), false);
         }
     }
 }
