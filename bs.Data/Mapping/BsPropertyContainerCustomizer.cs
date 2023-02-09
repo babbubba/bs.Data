@@ -72,30 +72,32 @@ namespace bs.Data.Mapping
 
         public void SetManyToOne<TElement>(Expression<Func<TEntity, TElement>> property, string refColumn) where TElement : class
         {
-            SetManyToOne(property, refColumn, null,null);
+            SetManyToOne(property, refColumn, null,null,null);
         }
         public void SetManyToOne<TElement>(Expression<Func<TEntity, TElement>> property, string refColumn, string fkName) where TElement : class
         {
-            SetManyToOne(property, refColumn, fkName,null);
-
+            SetManyToOne(property, refColumn, fkName,null,null);
         }
-        public void SetManyToOne<TElement>(Expression<Func<TEntity, TElement>> property, string refColumn, string fkName,  Action<IManyToOneMapper> propMapper) where TElement : class
+
+        public void SetManyToOne<TElement>(Expression<Func<TEntity, TElement>> property, string refColumn, string fkName, Type referenceClass) where TElement : class
+        {
+            SetManyToOne(property, refColumn, fkName, referenceClass, null);
+        }
+        public void SetManyToOne<TElement>(Expression<Func<TEntity, TElement>> property, string refColumn, string fkName, Type referenceClass, Action<IManyToOneMapper> propMapper) where TElement : class
         {
             void mapping(IManyToOneMapper t)
             {
                 t.Column(refColumn);
-                if (fkName != null)
-                {
-                    t.ForeignKey(fkName);
-                }
+                if (fkName != null) t.ForeignKey(fkName);
                 t.Cascade(Cascade.All);
                 t.Lazy(LazyRelation.NoProxy);
+                if(referenceClass!=null) t.Class(referenceClass);
                 propMapper?.Invoke(t);
-
             }
 
             RegisterManyToOneMapping(property, mapping);
         }
+      
       
         /// <summary>
         /// Sets the one to many relationship (the saving responsability is of the related entity and cascade all is setted as deefault behaviour).
@@ -134,6 +136,8 @@ namespace bs.Data.Mapping
                 t.Fetch(CollectionFetchMode.Subselect);
                 t.BatchSize(Global.BATCH_SIZE);
                 t.Lazy(CollectionLazy.NoLazy);
+                t.Inverse(true);
+                t.Cascade(Cascade.All);
                 propMapper?.Invoke(t);
             }
 
