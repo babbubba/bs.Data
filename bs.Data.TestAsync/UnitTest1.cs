@@ -33,7 +33,7 @@ namespace bs.Data.TestAsync
                 Name = "Fabio",
                 Lastname = "Cavallari",
                 Age = 40,
-                ContactDate = new DateTime(2020, 9, 2),
+                ContactDate = new DateTime(2020, 9, 2, 0, 0, 0, DateTimeKind.Utc),
                 Description = "Simply me",
                 Photo = new byte[] { 12, 34, 76, 250, 1, 0, 44, 2 }
             };
@@ -66,7 +66,7 @@ namespace bs.Data.TestAsync
                 Name = "Pinco",
                 Lastname = "Pallino",
                 Age = 28,
-                ContactDate = new DateTime(2018, 9, 2),
+                ContactDate = new DateTime(2018, 7, 2, 0, 0, 0, DateTimeKind.Utc),
                 Description = "Simply no one",
                 Photo = new byte[] { 60, 22, 115, 250, 20, 7, 44, 3 }
             };
@@ -155,7 +155,7 @@ namespace bs.Data.TestAsync
                     Name = "Gigi",
                     Lastname = "La Trottola",
                     Age = 64,
-                    ContactDate = new DateTime(2021, 2, 16),
+                    ContactDate = new DateTime(2021, 2, 16, 0, 0, 0, DateTimeKind.Utc),
                     Description = "Simply me",
                     Photo = new byte[] { 12, 34, 76, 250, 1, 0, 44, 2 }
                 };
@@ -188,7 +188,7 @@ namespace bs.Data.TestAsync
                     Name = "Pinco",
                     Lastname = "Pallino",
                     Age = 28,
-                    ContactDate = new DateTime(2018, 9, 2),
+                    ContactDate = new DateTime(2020, 9, 2, 0, 0, 0, DateTimeKind.Utc),
                     Description = "Simply no one",
                     Photo = new byte[] { 60, 22, 115, 250, 20, 7, 44, 3 }
                 };

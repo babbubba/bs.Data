@@ -33,21 +33,16 @@ namespace bs.Data.TestAsync
         {
             Table("Persons");
             GuidId(x => x.Id);
-            Property(b => b.Name, map => map.Length(25));
-            Property(b => b.Lastname, map => map.Length(25));
+            PropertyText(b => b.Name);
+            Property(b => b.Lastname);
             Property(b => b.Age);
-            Property(b => b.ContactDate);
-            Property(b => b.Description, x =>
+            PropertyUtcDate(b => b.ContactDate);
+            PropertyLongText(b => b.Description, 500);
+            PropertyBlob(b => b.Photo);
+            SetOneToMany(p => p.Addresses, "PersonId", typeof(AddressModel), pm=> 
             {
-                x.Length(500);
-                x.Type(NHibernateUtil.StringClob);
-                x.NotNullable(true);
+                pm.Fetch(CollectionFetchMode.Join);
             });
-            Property(b => b.Photo, x =>
-            {
-                x.Type(NHibernateUtil.BinaryBlob);
-            });
-            SetOneToMany(p => p.Addresses, "PersonId", typeof(AddressModel));
             SetManyToMany(p => p.Rooms, "PersonsRoomsLink", "PersonId", "RoomId", typeof(RoomModel), false);
             Property(b => b.IsDeleted);
             Property(b => b.DeletionDate);

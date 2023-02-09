@@ -22,11 +22,10 @@ namespace bs.Data.TestAsync
         {
             Table("Addresses");
             GuidId(x => x.Id);
-            SetManyToOne(x => x.Person, "PersonId","FK__Addresses_Person");
-            Property(b => b.StreetName, map => map.Length(90));
-            Property(b => b.PostalCode, map => map.Length(10));
+            SetManyToOne(x => x.Person, "PersonId", "FK__Addresses_Person");
+            PropertyText(b => b.StreetName, 90);
+            PropertyText(b => b.PostalCode,10);
             SetManyToOne(x => x.Country, "CountryId", "FK_Addresses_Country");
-
         }
     }
 }

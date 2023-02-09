@@ -21,7 +21,7 @@ namespace bs.Data.TestAsync
         {
             Table("Rooms");
             GuidId(x=>x.Id);
-            Property(b => b.Name, map => map.Length(25));
+            PropertyText(b => b.Name);
             SetManyToMany(p => p.Persons, "PersonsRoomsLink",  "RoomId", "PersonId", typeof(PersonModel), false);
         }
     }

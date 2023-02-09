@@ -1,4 +1,5 @@
-﻿using NHibernate.Mapping;
+﻿using NHibernate;
+using NHibernate.Mapping;
 using NHibernate.Mapping.ByCode;
 using NHibernate.Mapping.ByCode.Impl;
 using NHibernate.Mapping.ByCode.Impl.CustomizersImpl;
@@ -6,6 +7,7 @@ using NHibernate.Type;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Xml.Linq;
 
 namespace bs.Data.Mapping
 {
@@ -26,9 +28,23 @@ namespace bs.Data.Mapping
         /// <param name="referencedEntityColumn">The referenced entity column.</param>
         public void SetManyToMany<TElement>(Expression<Func<TEntity, IEnumerable<TElement>>> property, string linkTableName, string currentEntityColumn, string referencedEntityColumn)
         {
-            SetManyToMany(property, linkTableName, currentEntityColumn, referencedEntityColumn,null, true);
+            SetManyToMany(property, linkTableName, currentEntityColumn, referencedEntityColumn,null, null);
         }
         public void SetManyToMany<TElement>(Expression<Func<TEntity, IEnumerable<TElement>>> property, string linkTableName, string currentEntityColumn, string referencedEntityColumn, Type referenceClass, bool cascadeAll)
+        {
+            void properyMapper(ISetPropertiesMapper<TEntity, TElement> p)
+            {
+                p.Cascade(cascadeAll ? Cascade.All :Cascade.None);
+            }
+
+            void manyToManyMapping(IManyToManyMapper m)
+            {
+                if (referenceClass != null) m.Class(referenceClass);
+            }
+
+            SetManyToMany(property, linkTableName, currentEntityColumn, referencedEntityColumn, properyMapper, manyToManyMapping);
+        }
+        public void SetManyToMany<TElement>(Expression<Func<TEntity, IEnumerable<TElement>>> property, string linkTableName, string currentEntityColumn, string referencedEntityColumn, Action<ISetPropertiesMapper<TEntity, TElement>> propertiesMapper, Action<IManyToManyMapper> manyToManyMapper)
         {
             void properyMapper(ISetPropertiesMapper<TEntity, TElement> p)
             {
@@ -37,18 +53,15 @@ namespace bs.Data.Mapping
                 p.Fetch(CollectionFetchMode.Subselect);
                 p.BatchSize(100);
                 p.Lazy(CollectionLazy.NoLazy);
-                if (cascadeAll) p.Cascade(Cascade.All);
-
-
+                propertiesMapper?.Invoke(p);
             }
 
             void mapping(ICollectionElementRelation<TElement> map)
             {
                 map.ManyToMany(collectionMapping =>
                 {
-                    if(referenceClass!=null) collectionMapping.Class(referenceClass);
                     collectionMapping.Column(referencedEntityColumn);
-
+                    manyToManyMapper?.Invoke(collectionMapping);
                 });
             }
 
@@ -57,11 +70,16 @@ namespace bs.Data.Mapping
 
         }
 
-        public void SetManyToOne<TProperty>(Expression<Func<TEntity, TProperty>> property, string refColumn) where TProperty : class
+        public void SetManyToOne<TElement>(Expression<Func<TEntity, TElement>> property, string refColumn) where TElement : class
         {
-            SetManyToOne(property, refColumn, null);
+            SetManyToOne(property, refColumn, null,null);
         }
-        public void SetManyToOne<TProperty>(Expression<Func<TEntity, TProperty>> property, string refColumn, string fkName) where TProperty : class
+        public void SetManyToOne<TElement>(Expression<Func<TEntity, TElement>> property, string refColumn, string fkName) where TElement : class
+        {
+            SetManyToOne(property, refColumn, fkName,null);
+
+        }
+        public void SetManyToOne<TElement>(Expression<Func<TEntity, TElement>> property, string refColumn, string fkName,  Action<IManyToOneMapper> propMapper) where TElement : class
         {
             void mapping(IManyToOneMapper t)
             {
@@ -72,12 +90,13 @@ namespace bs.Data.Mapping
                 }
                 t.Cascade(Cascade.All);
                 t.Lazy(LazyRelation.NoProxy);
+                propMapper?.Invoke(t);
 
             }
 
             RegisterManyToOneMapping(property, mapping);
         }
-
+      
         /// <summary>
         /// Sets the one to many relationship (the saving responsability is of the related entity and cascade all is setted as deefault behaviour).
         /// </summary>
@@ -102,11 +121,20 @@ namespace bs.Data.Mapping
             void properyMapper(ISetPropertiesMapper<TEntity, TElement> t)
             {
                 t.Inverse(inverse);
+                t.Cascade(cascadeAll ? Cascade.All : Cascade.None);
+            }
+
+            SetOneToMany(property, referenceColumn, referenceClass, properyMapper);
+        }
+        public void SetOneToMany<TElement>(Expression<Func<TEntity, IEnumerable<TElement>>> property, string referenceColumn, Type referenceClass, Action<ISetPropertiesMapper<TEntity, TElement>> propMapper)
+        {
+            void properyMapper(ISetPropertiesMapper<TEntity, TElement> t)
+            {
                 t.Key(km => km.Column(referenceColumn));
                 t.Fetch(CollectionFetchMode.Subselect);
-                t.BatchSize(100);
+                t.BatchSize(Global.BATCH_SIZE);
                 t.Lazy(CollectionLazy.NoLazy);
-                if(cascadeAll) t.Cascade(Cascade.All);
+                propMapper?.Invoke(t);
             }
 
             void mapping(ICollectionElementRelation<TElement> map)
@@ -125,7 +153,7 @@ namespace bs.Data.Mapping
             }
             RegisterPropertyMapping(property, mapping);
         }
-
+        
         public void PropertyText<TProperty>(Expression<Func<TEntity, TProperty>> property, int lenght = 25)
         {
             void mapping(IPropertyMapper map)
@@ -135,11 +163,39 @@ namespace bs.Data.Mapping
             RegisterPropertyMapping(property, mapping);
         }
 
+        public void PropertyLongText<TProperty>(Expression<Func<TEntity, TProperty>> property)
+        {
+            PropertyLongText(property, 1200, null);
+        }
+        public void PropertyLongText<TProperty>(Expression<Func<TEntity, TProperty>> property, int lenght)
+        {
+            PropertyLongText(property, lenght, null);
+        }
+        public void PropertyLongText<TProperty>(Expression<Func<TEntity, TProperty>> property, int lenght, Action<IPropertyMapper> propertyMapper)
+        {
+            void mapping(IPropertyMapper map)
+            {
+                map.Length(lenght);
+                map.Type(NHibernateUtil.StringClob);
+                propertyMapper?.Invoke(map);
+            }
+            RegisterPropertyMapping(property, mapping);
+        }
+
         public void PropertyUnique<TProperty>(Expression<Func<TEntity, TProperty>> property, string uniqueKey)
         {
             void mapping(IPropertyMapper map)
             {
                 map.UniqueKey(uniqueKey);
+            }
+            RegisterPropertyMapping(property, mapping);
+        }
+
+        public void PropertyBlob<TProperty>(Expression<Func<TEntity, TProperty>> property)
+        {
+            void mapping(IPropertyMapper map)
+            {
+                map.Type(NHibernateUtil.BinaryBlob);
             }
             RegisterPropertyMapping(property, mapping);
         }

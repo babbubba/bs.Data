@@ -17,7 +17,7 @@ namespace bs.Data.TestAsync
         {
             Table("Countries");
             GuidId(x => x.Id);
-            Property(b => b.Name, map => map.Length(50));
+            PropertyText(b => b.Name, 50);
         }
     }
 }
