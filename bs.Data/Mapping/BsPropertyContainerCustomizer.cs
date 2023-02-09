@@ -2,6 +2,7 @@
 using NHibernate.Mapping.ByCode;
 using NHibernate.Mapping.ByCode.Impl;
 using NHibernate.Mapping.ByCode.Impl.CustomizersImpl;
+using NHibernate.Type;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -114,6 +115,33 @@ namespace bs.Data.Mapping
             }
 
             RegisterSetMapping(property, properyMapper, mapping);
+        }
+
+        public void PropertyUtcDate<TProperty>(Expression<Func<TEntity, TProperty>> property)
+        {
+            void mapping (IPropertyMapper map)
+            {
+                map.Type<UtcDateTimeType>();
+            }
+            RegisterPropertyMapping(property, mapping);
+        }
+
+        public void PropertyText<TProperty>(Expression<Func<TEntity, TProperty>> property, int lenght = 25)
+        {
+            void mapping(IPropertyMapper map)
+            {
+                map.Length(lenght);
+            }
+            RegisterPropertyMapping(property, mapping);
+        }
+
+        public void PropertyUnique<TProperty>(Expression<Func<TEntity, TProperty>> property, string uniqueKey)
+        {
+            void mapping(IPropertyMapper map)
+            {
+                map.UniqueKey(uniqueKey);
+            }
+            RegisterPropertyMapping(property, mapping);
         }
     }
 }
