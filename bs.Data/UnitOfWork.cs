@@ -25,7 +25,7 @@ namespace bs.Data
         }
 
         public ISession Session { get; }
-        public bool TransactionIsNotNull => !(transaction is null);
+        public bool TransactionIsNotNull => transaction is not null;
 
         /// <summary>
         /// Begins the transaction.

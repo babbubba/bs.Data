@@ -82,7 +82,7 @@ namespace bs.Data.Helpers
             {
                 throw new ORMException("Unit of work has not a valid session instance, cannot run a new transaction");
             }
-            if(!uow.Session.IsConnected)
+            if (!uow.Session.IsConnected)
             {
                 //uow.Session.Reconnect();
             }
@@ -185,7 +185,7 @@ namespace bs.Data.Helpers
                     catch (Exception ex)
                     {
                         if (!transaction.WasRolledBack) await transaction.RollbackAsync();
-                        throw new ORMException(ex?.Message, ex, "GENERIC");
+                        throw new ORMException(ex?.GetBaseException().Message, ex, "GENERIC");
                     }
                 }
             }
