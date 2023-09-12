@@ -139,6 +139,11 @@ namespace bs.Data.Mapping
             SetManyToOne(property, refColumn, fkName, referenceClass, null);
         }
 
+        public void SetManyToOne<TElement>(Expression<Func<TEntity, TElement>> property, string refColumn, string fkName, Action<IManyToOneMapper> propMapper) where TElement : class
+        {
+            SetManyToOne(property, refColumn, fkName, null, propMapper);
+        }
+
         public void SetManyToOne<TElement>(Expression<Func<TEntity, TElement>> property, string refColumn, string fkName, Type referenceClass, Action<IManyToOneMapper> propMapper) where TElement : class
         {
             void mapping(IManyToOneMapper t)
