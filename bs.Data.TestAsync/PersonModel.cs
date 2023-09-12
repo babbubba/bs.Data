@@ -1,10 +1,12 @@
 ﻿using bs.Data.Interfaces.BaseEntities;
 using bs.Data.Mapping;
+using bs.Data.UserTypes;
 using NHibernate;
 using NHibernate.Mapping.ByCode;
 using NHibernate.Mapping.ByCode.Conformist;
 using System;
 using System.Collections.Generic;
+using System.IO.MemoryMappedFiles;
 
 namespace bs.Data.TestAsync
 {
@@ -14,6 +16,7 @@ namespace bs.Data.TestAsync
         {
             Addresses = new List<AddressModel>();
         }
+
         public virtual Guid Id { get; set; }
         public virtual string Name { get; set; }
         public virtual string Lastname { get; set; }
@@ -25,6 +28,7 @@ namespace bs.Data.TestAsync
         public virtual ICollection<RoomModel> Rooms { get; set; }
         public virtual bool IsDeleted { get; set; }
         public virtual DateTime? DeletionDate { get; set; }
+        public virtual IList<string> Tags { get; set; }
     }
 
     public class PersonModelMap : BsClassMapping<PersonModel>
@@ -39,13 +43,14 @@ namespace bs.Data.TestAsync
             PropertyUtcDate(b => b.ContactDate);
             PropertyLongText(b => b.Description, 500);
             PropertyBlob(b => b.Photo);
-            SetOneToMany(p => p.Addresses, "PersonId", typeof(AddressModel), pm=> 
+            SetOneToMany(p => p.Addresses, "PersonId", typeof(AddressModel), pm =>
             {
                 pm.Fetch(CollectionFetchMode.Join);
             });
             SetManyToMany(p => p.Rooms, "PersonsRoomsLink", "PersonId", "RoomId", typeof(RoomModel), false);
             Property(b => b.IsDeleted);
             Property(b => b.DeletionDate);
+            Property(b => b.Tags, map => map.Type<DelimitedList>());
         }
     }
 }

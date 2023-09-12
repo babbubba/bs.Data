@@ -68,7 +68,8 @@ namespace bs.Data.TestAsync
                 Age = 28,
                 ContactDate = new DateTime(2018, 7, 2, 0, 0, 0, DateTimeKind.Utc),
                 Description = "Simply no one",
-                Photo = new byte[] { 60, 22, 115, 250, 20, 7, 44, 3 }
+                Photo = new byte[] { 60, 22, 115, 250, 20, 7, 44, 3 },
+                Tags = new[] { "Tag1 - |", " Tag 2 ", "Tag3" }
             };
             await repo.CreatePersonAsync(person2);
 
@@ -77,7 +78,7 @@ namespace bs.Data.TestAsync
                 Country = country,
                 PostalCode = "666",
                 StreetName = "Via carlo rosselli, 2",
-                Person = person2
+                Person = person2,
             };
             await repo.CreateAddressAsync(p2a1);
             person2.Addresses.Add(p2a1);
@@ -120,13 +121,12 @@ namespace bs.Data.TestAsync
             var personsRet = (await repo.GetPersonsAsync()).ToList();
             repo.DeletePersonLogically(personsRet.Last());
             await uow.TryCommitOrRollbackAsync();
-            
+
             uow.BeginTransaction();
             var personsRet2 = await repo.GetPersonsLogicallyNotDeletedAsync();
             Assert.NotNull(personsRet.FirstOrDefault());
             await uow.TryCommitOrRollbackAsync();
         }
-
 
         [Fact]
         public async Task Test_interrupted_transaction_SqlServerAsync()
