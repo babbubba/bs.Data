@@ -48,15 +48,24 @@ namespace bs.Data.UserTypes
         public object NullSafeGet(DbDataReader rs, string[] names, ISessionImplementor session, object owner)
         {
             var r = rs[names[0]];
-            return r == DBNull.Value
-                ? new List<string>()
-                : ((string)r).Split(delimiter, StringSplitOptions.None);
+            object result = null;
+
+            if (r == DBNull.Value || string.IsNullOrWhiteSpace((string)r))
+            {
+                result = new List<string>();
+            }
+            else
+            {
+                result = ((string)r).Split(delimiter, StringSplitOptions.None);
+            }
+
+            return result;
         }
 
         public void NullSafeSet(DbCommand cmd, object value, int index, ISessionImplementor session)
         {
             object paramVal = DBNull.Value;
-            if (value != null)
+            if (value != null && value is string[])
             {
                 paramVal = string.Join(delimiter, (IEnumerable<string>)value);
             }
