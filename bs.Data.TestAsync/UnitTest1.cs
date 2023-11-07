@@ -17,7 +17,8 @@ namespace bs.Data.TestAsync
         [Fact]
         public async Task Test_SqlServerAsync()
         {
-            CreateUnitOfWork_SqlServer();
+            //CreateUnitOfWork_SqlServer();
+            CreateUnitOfWork_Postgresql();
             var uow = serviceProvider.GetService<IUnitOfWork>();
             var repo = serviceProvider.GetService<BsDataRepository>();
 
@@ -35,7 +36,8 @@ namespace bs.Data.TestAsync
                 Age = 40,
                 ContactDate = new DateTime(2020, 9, 2, 0, 0, 0, DateTimeKind.Utc),
                 Description = "Simply me",
-                Photo = new byte[] { 12, 34, 76, 250, 1, 0, 44, 2 }
+                Photo = new byte[] { 12, 34, 76, 250, 1, 0, 44, 2 },
+                Tags = new List<string> { "1", "2", "3", "stella" }
             };
             await repo.CreatePersonAsync(person1);
 
@@ -252,9 +254,24 @@ namespace bs.Data.TestAsync
             var dbContext = new DbContext
             {
                 ConnectionString = "Persist Security Info=False;Integrated Security=SSPI; database = OrmTest; server = (local)",
-
-                //ConnectionString = "Persist Security Info=False;Integrated Security=SSPI; database = ORMTest; server = .\\SQLEXPRESS2012",
                 DatabaseEngineType = DbType.MsSql2012,
+                Create = true,
+                Update = true,
+                LookForEntitiesDllInCurrentDirectoryToo = false,
+                SetBatchSize = 25
+            };
+            services = new ServiceCollection();
+            services.AddBsData(dbContext);
+            services.AddSingleton<BsDataRepository>();
+            serviceProvider = services.BuildServiceProvider();
+        }
+
+        private void CreateUnitOfWork_Postgresql()
+        {
+            var dbContext = new DbContext
+            {
+                ConnectionString = "User ID=italcom;Password=Password01;Host=127.0.0.1;Port=5432;Database=ormtest;Pooling=true;Connection Lifetime=0;",
+                DatabaseEngineType = DbType.PostgreSQL83,
                 Create = true,
                 Update = true,
                 LookForEntitiesDllInCurrentDirectoryToo = false,

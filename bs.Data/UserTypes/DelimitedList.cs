@@ -16,7 +16,7 @@ namespace bs.Data.UserTypes
         private const string delimiter = "|@@|";
         public SqlType[] SqlTypes => new SqlType[] { new StringSqlType() };
 
-        public Type ReturnedType => typeof(IList<string>);
+        public Type ReturnedType => typeof(ICollection<string>);
 
         public bool IsMutable => false;
 
@@ -42,17 +42,22 @@ namespace bs.Data.UserTypes
 
         public int GetHashCode(object x)
         {
+            if (x == null)
+            {
+                return 0;
+            }
+
             return x.GetHashCode();
         }
 
         public object NullSafeGet(DbDataReader rs, string[] names, ISessionImplementor session, object owner)
         {
             var r = rs[names[0]];
-            object result = null;
 
+            object result;
             if (r == DBNull.Value || string.IsNullOrWhiteSpace((string)r))
             {
-                result = new List<string>();
+                result = Array.Empty<string>();
             }
             else
             {
@@ -64,11 +69,21 @@ namespace bs.Data.UserTypes
 
         public void NullSafeSet(DbCommand cmd, object value, int index, ISessionImplementor session)
         {
-            object paramVal = DBNull.Value;
-            if (value != null && value is string[])
+            object paramVal;
+
+            if (value is string[] array)
+            {
+                value = array.ToList();
+            }
+            if (value != null)
             {
                 paramVal = string.Join(delimiter, (IEnumerable<string>)value);
             }
+            else
+            {
+                paramVal = DBNull.Value;
+            }
+
             var parameter = (IDataParameter)cmd.Parameters[index];
             parameter.Value = paramVal;
         }
