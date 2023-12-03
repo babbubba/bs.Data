@@ -8,8 +8,8 @@
     <Company>bSoft</Company>
     <Description>Nhibernate based Repository with facilities.
 Supports: SqlServer, MySql, Sqlite, PostgreeSql</Description>
-    <AssemblyVersion>4.0.4.5</AssemblyVersion>
-    <FileVersion>4.0.4.5</FileVersion>
+    <AssemblyVersion>5.0.0.0</AssemblyVersion>
+    <FileVersion>5.0.0.0</FileVersion>
     <Version>$(AssemblyVersion)</Version>
     <Copyright>Fabio Cavallari @ bSoft</Copyright>
     <PackageProjectUrl>https://github.com/babbubba/bs.Data</PackageProjectUrl>
