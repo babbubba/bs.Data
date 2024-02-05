@@ -1,6 +1,6 @@
 ﻿using bs.Data.Interfaces;
+using Microsoft.Data.SqlClient;
 using System;
-using System.Data.SqlClient;
 using System.Threading;
 
 namespace bs.Data.Helpers

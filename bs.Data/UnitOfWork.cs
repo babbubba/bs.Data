@@ -30,11 +30,11 @@ namespace bs.Data
         /// <summary>
         /// Begins the transaction.
         /// </summary>
-        /// <exception cref="ORMException">This Unit of Work contains a live transaction. You have to close existing transaction before creating new one.</exception>
+        /// <exception cref="OrmException">This Unit of Work contains a live transaction. You have to close existing transaction before creating new one.</exception>
         public void BeginTransaction()
         {
             if (transaction?.IsActive ?? false)
-                throw new ORMException("This Unit of Work contains a live transaction. You have to close existing transaction before creating new one.");
+                throw new OrmException("This Unit of Work contains a live transaction. You have to close existing transaction before creating new one.");
 
             transaction = Session.BeginTransaction();
         }

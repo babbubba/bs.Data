@@ -54,9 +54,8 @@ namespace bs.Data
             }
             catch (System.Exception ex)
             {
-                throw new ORMException("Error lookig for mapping's types to register using reflection. See inner exceptions for details.", ex);
+                throw new OrmException("Error lookig for mapping's types to register using reflection. See inner exceptions for details.", ex);
             }
-            //System.Diagnostics.Debug.WriteLine("ORM - Mapped external types: " + string.Join(",", modelsAssemblies.SelectMany(a => a.ExportedTypes).Select(t => t.Name)));
 
             // Compile mapped entities
             HbmMapping domainMapping = mapper.CompileMappingForAllExplicitlyAddedEntities();
@@ -67,7 +66,7 @@ namespace bs.Data
             var databaseIntegration = new NHibernate.Cfg.Loquacious.DbIntegrationConfigurationProperties(configuration);
 
             // import extra not persistent model
-            if (!(dbContext.Imports is null))
+            if (dbContext.Imports is not null)
             {
                 foreach (var import in dbContext.Imports)
                 {
@@ -75,7 +74,7 @@ namespace bs.Data
                 }
             }
 
-            if (!(dbContext.Filters is null))
+            if (dbContext.Filters is not null)
             {
                 foreach (var filter in dbContext.Filters)
                 {
@@ -103,13 +102,13 @@ namespace bs.Data
                     break;
 
                 case DbType.MsSql2012:
-                    databaseIntegration.Driver<NHibernate.Driver.SqlClientDriver>();
+                    databaseIntegration.Driver<NHibernate.Driver.MicrosoftDataSqlClientDriver>();
                     databaseIntegration.Dialect<MsSql2012Dialect>();
                     databaseIntegration.ConnectionString = dbContext.ConnectionString;
                     break;
 
                 case DbType.MsSql2008:
-                    databaseIntegration.Driver<NHibernate.Driver.SqlClientDriver>();
+                    databaseIntegration.Driver<NHibernate.Driver.MicrosoftDataSqlClientDriver>();
                     databaseIntegration.Dialect<MsSql2008Dialect>();
                     databaseIntegration.ConnectionString = dbContext.ConnectionString;
                     break;
@@ -125,7 +124,7 @@ namespace bs.Data
                     break;
 
                 default:
-                    throw new ORMException("The Database Engine Type selected is not supported in current version.");
+                    throw new OrmException("The Database Engine Type selected is not supported in current version.");
             }
 
             // sets creation, updation, recreation or simple validation of schema
@@ -149,7 +148,7 @@ namespace bs.Data
             }
             catch (System.Exception ex)
             {
-                throw new ORMException("Error adding mappings to ORM. See inner exceptions for details.", ex);
+                throw new OrmException("Error adding mappings to ORM. See inner exceptions for details.", ex);
             }
 
             // Create the session factory
@@ -160,11 +159,11 @@ namespace bs.Data
             }
             catch (SchemaValidationException schemaValidationEx)
             {
-                throw new ORMException($"Error validating schema:\n{string.Join(";\n ", schemaValidationEx.ValidationErrors)}", schemaValidationEx);
+                throw new OrmException($"Error validating schema:\n{string.Join(";\n ", schemaValidationEx.ValidationErrors)}", schemaValidationEx);
             }
             catch (System.Exception ex)
             {
-                throw new ORMException("Error building ORM session factory. See inner exception for details", ex);
+                throw new OrmException("Error building ORM session factory. See inner exception for details", ex);
             }
 
             // Add to dependency injecton the factory (singleton) and session and unit of work (scoped)
@@ -183,7 +182,7 @@ namespace bs.Data
             }
             catch (System.Exception ex)
             {
-                throw new ORMException("Error registering services in the provided Service Collection. See inner exception for details.", ex);
+                throw new OrmException("Error registering services in the provided Service Collection. See inner exception for details.", ex);
             }
 
             return services;

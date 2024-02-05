@@ -1,7 +1,7 @@
 ﻿using bs.Data.Interfaces;
+using Microsoft.Data.SqlClient;
 using NHibernate;
 using System;
-using System.Data.SqlClient;
 using System.Threading.Tasks;
 
 namespace bs.Data.Helpers
@@ -27,7 +27,7 @@ namespace bs.Data.Helpers
             catch (Exception ex)
             {
                 if (uow.TransactionIsNotNull) uow.Rollback();
-                throw new ORMException(ex.GetBaseException().Message, ex);
+                throw new OrmException(ex.GetBaseException().Message, ex);
             }
             finally
             {
@@ -54,17 +54,17 @@ namespace bs.Data.Helpers
             catch (SqlException sqlEx)
             {
                 if (uow.TransactionIsNotNull) uow.Rollback();
-                throw new ORMException(sqlEx?.Message, sqlEx, "SQL");
+                throw new OrmException(sqlEx?.Message, sqlEx, "SQL");
             }
             catch (ADOException AdoEx)
             {
                 if (uow.TransactionIsNotNull) uow.Rollback();
-                throw new ORMException(AdoEx?.Message, AdoEx, "ADO");
+                throw new OrmException(AdoEx?.Message, AdoEx, "ADO");
             }
             catch (Exception ex)
             {
                 if (uow.TransactionIsNotNull) uow.Rollback();
-                throw new ORMException(ex.GetBaseException().Message, ex, "GENERIC");
+                throw new OrmException(ex.GetBaseException().Message, ex, "GENERIC");
             }
             finally
             {
@@ -76,11 +76,11 @@ namespace bs.Data.Helpers
         {
             if (uow is null)
             {
-                throw new ORMException("Unit of work is not a valid instance, cannot run a new transaction");
+                throw new OrmException("Unit of work is not a valid instance, cannot run a new transaction");
             }
             if (uow.Session is null)
             {
-                throw new ORMException("Unit of work has not a valid session instance, cannot run a new transaction");
+                throw new OrmException("Unit of work has not a valid session instance, cannot run a new transaction");
             }
             if (!uow.Session.IsConnected)
             {
@@ -105,17 +105,17 @@ namespace bs.Data.Helpers
                         if (RetryPolicies.ExponentialBackOff.RetryOnLivelockAndDeadlock(retry).PerformRetry(sqlEx)) continue;
 
                         // This was not a DeadLock exception so throw exception
-                        throw new ORMException(sqlEx?.Message, sqlEx, "SQL");
+                        throw new OrmException(sqlEx?.Message, sqlEx, "SQL");
                     }
                     catch (ADOException AdoEx)
                     {
                         if (!transaction.WasRolledBack) await transaction.RollbackAsync();
-                        throw new ORMException(AdoEx?.Message, AdoEx, "ADO");
+                        throw new OrmException(AdoEx?.Message, AdoEx, "ADO");
                     }
                     catch (Exception ex)
                     {
                         if (!transaction.WasRolledBack) await transaction.RollbackAsync();
-                        throw new ORMException(ex?.Message, ex, "GENERIC");
+                        throw new OrmException(ex?.Message, ex, "GENERIC");
                     }
                     finally
                     {
@@ -135,7 +135,7 @@ namespace bs.Data.Helpers
         /// <returns>
         /// The function's return value
         /// </returns>
-        /// <exception cref="ORMException"></exception>
+        /// <exception cref="OrmException"></exception>
         /// <example>
         /// You can use this in this way:<code>var entity = await uow.RunInTransactionAsync(async () =&gt;
         /// {
@@ -150,11 +150,11 @@ namespace bs.Data.Helpers
         {
             if (uow is null)
             {
-                throw new ORMException("Unit of work is not a valid instance, cannot run a new transaction");
+                throw new OrmException("Unit of work is not a valid instance, cannot run a new transaction");
             }
             if (uow.Session is null)
             {
-                throw new ORMException("Unit of work has not a valid session instance, cannot run a new transaction");
+                throw new OrmException("Unit of work has not a valid session instance, cannot run a new transaction");
             }
 
             while (true)
@@ -175,17 +175,17 @@ namespace bs.Data.Helpers
                         if (RetryPolicies.ExponentialBackOff.RetryOnLivelockAndDeadlock(retry).PerformRetry(sqlEx)) continue;
 
                         // This was not a DeadLock exception so throw exception
-                        throw new ORMException(sqlEx?.Message, sqlEx, "SQL");
+                        throw new OrmException(sqlEx?.Message, sqlEx, "SQL");
                     }
                     catch (ADOException AdoEx)
                     {
                         if (!transaction.WasRolledBack) await transaction.RollbackAsync();
-                        throw new ORMException(AdoEx?.Message, AdoEx, "ADO");
+                        throw new OrmException(AdoEx?.Message, AdoEx, "ADO");
                     }
                     catch (Exception ex)
                     {
                         if (!transaction.WasRolledBack) await transaction.RollbackAsync();
-                        throw new ORMException(ex?.GetBaseException().Message, ex, "GENERIC");
+                        throw new OrmException(ex?.GetBaseException().Message, ex, "GENERIC");
                     }
                 }
             }

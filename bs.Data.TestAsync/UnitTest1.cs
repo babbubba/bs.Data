@@ -17,8 +17,21 @@ namespace bs.Data.TestAsync
         [Fact]
         public async Task Test_SqlServerAsync()
         {
-            //CreateUnitOfWork_SqlServer();
+            CreateUnitOfWork_SqlServer();
+            await Test_Async();
+            await Test2_Async();
+        }
+
+        [Fact]
+        public async Task Test_PostgresAsync()
+        {
             CreateUnitOfWork_Postgresql();
+            await Test_Async();
+            await Test2_Async();
+        }
+
+        public async Task Test_Async()
+        {
             var uow = serviceProvider.GetService<IUnitOfWork>();
             var repo = serviceProvider.GetService<BsDataRepository>();
 
@@ -130,16 +143,12 @@ namespace bs.Data.TestAsync
             await uow.TryCommitOrRollbackAsync();
         }
 
-        [Fact]
-        public async Task Test_interrupted_transaction_SqlServerAsync()
+        public async Task Test2_Async()
         {
-            CreateUnitOfWork_SqlServer();
             var uow = serviceProvider.GetService<IUnitOfWork>();
             var repo = serviceProvider.GetService<BsDataRepository>();
 
             await TransactionInterupted(uow, repo);
-
-            // if no exception occurred it worked fine
         }
 
         private async Task TransactionInterupted(IUnitOfWork uow, BsDataRepository repo)
@@ -253,7 +262,7 @@ namespace bs.Data.TestAsync
         {
             var dbContext = new DbContext
             {
-                ConnectionString = "Persist Security Info=False;Integrated Security=SSPI; database = OrmTest; server = (local)",
+                ConnectionString = "Persist Security Info=False;Integrated Security=SSPI; database = OrmTest; server = (local);TrustServerCertificate=True",
                 DatabaseEngineType = DbType.MsSql2012,
                 Create = true,
                 Update = true,
