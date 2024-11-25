@@ -387,7 +387,9 @@ namespace bs.Data.TestAsync
         {
             var dbContext = new DbContext
             {
-                ConnectionString = "User ID=italcom;Password=Password01;Host=127.0.0.1;Port=5432;Database=ormtest;Pooling=true;Connection Lifetime=0;",
+                //ConnectionString = "User ID=italcom;Password=Password01;Host=127.0.0.1;Port=5432;Database=ormtest;Pooling=true;Connection Lifetime=0;",
+                ConnectionString= "User ID=postgres;Password=Password01!;Host=192.168.254.38;Port=5432;Database=ormtest",
+
                 DatabaseEngineType = DbType.PostgreSQL83,
                 Create = true,
                 Update = true,
