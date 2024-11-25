@@ -1,7 +1,7 @@
 ﻿using bs.Data.Interfaces;
+using Microsoft.Data.SqlClient;
 using NHibernate;
 using System;
-using System.Data.SqlClient;
 using System.Threading.Tasks;
 
 namespace bs.Data.Helpers
@@ -54,12 +54,12 @@ namespace bs.Data.Helpers
             catch (SqlException sqlEx)
             {
                 if (uow.TransactionIsNotNull) uow.Rollback();
-                throw new ORMException(sqlEx?.Message, sqlEx, "SQL");
+                throw new ORMException(sqlEx.Message, sqlEx, "SQL");
             }
             catch (ADOException AdoEx)
             {
                 if (uow.TransactionIsNotNull) uow.Rollback();
-                throw new ORMException(AdoEx?.Message, AdoEx, "ADO");
+                throw new ORMException(AdoEx.Message, AdoEx, "ADO");
             }
             catch (Exception ex)
             {
@@ -105,17 +105,17 @@ namespace bs.Data.Helpers
                         if (RetryPolicies.ExponentialBackOff.RetryOnLivelockAndDeadlock(retry).PerformRetry(sqlEx)) continue;
 
                         // This was not a DeadLock exception so throw exception
-                        throw new ORMException(sqlEx?.Message, sqlEx, "SQL");
+                        throw new ORMException(sqlEx.Message, sqlEx, "SQL");
                     }
                     catch (ADOException AdoEx)
                     {
                         if (!transaction.WasRolledBack) await transaction.RollbackAsync();
-                        throw new ORMException(AdoEx?.Message, AdoEx, "ADO");
+                        throw new ORMException(AdoEx.Message, AdoEx, "ADO");
                     }
                     catch (Exception ex)
                     {
                         if (!transaction.WasRolledBack) await transaction.RollbackAsync();
-                        throw new ORMException(ex?.Message, ex, "GENERIC");
+                        throw new ORMException(ex.Message, ex, "GENERIC");
                     }
                     finally
                     {
@@ -175,17 +175,17 @@ namespace bs.Data.Helpers
                         if (RetryPolicies.ExponentialBackOff.RetryOnLivelockAndDeadlock(retry).PerformRetry(sqlEx)) continue;
 
                         // This was not a DeadLock exception so throw exception
-                        throw new ORMException(sqlEx?.Message, sqlEx, "SQL");
+                        throw new ORMException(sqlEx.Message, sqlEx, "SQL");
                     }
                     catch (ADOException AdoEx)
                     {
                         if (!transaction.WasRolledBack) await transaction.RollbackAsync();
-                        throw new ORMException(AdoEx?.Message, AdoEx, "ADO");
+                        throw new ORMException(AdoEx.Message, AdoEx, "ADO");
                     }
                     catch (Exception ex)
                     {
                         if (!transaction.WasRolledBack) await transaction.RollbackAsync();
-                        throw new ORMException(ex?.GetBaseException().Message, ex, "GENERIC");
+                        throw new ORMException(ex.GetBaseException().Message, ex, "GENERIC");
                     }
                 }
             }

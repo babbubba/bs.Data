@@ -5,6 +5,7 @@ using NHibernate;
 using NHibernate.Cfg;
 using NHibernate.Cfg.MappingSchema;
 using NHibernate.Dialect;
+using NHibernate.Driver;
 using NHibernate.Mapping.ByCode;
 using System.Linq;
 
@@ -56,7 +57,6 @@ namespace bs.Data
             {
                 throw new ORMException("Error lookig for mapping's types to register using reflection. See inner exceptions for details.", ex);
             }
-            //System.Diagnostics.Debug.WriteLine("ORM - Mapped external types: " + string.Join(",", modelsAssemblies.SelectMany(a => a.ExportedTypes).Select(t => t.Name)));
 
             // Compile mapped entities
             HbmMapping domainMapping = mapper.CompileMappingForAllExplicitlyAddedEntities();
@@ -67,7 +67,7 @@ namespace bs.Data
             var databaseIntegration = new NHibernate.Cfg.Loquacious.DbIntegrationConfigurationProperties(configuration);
 
             // import extra not persistent model
-            if (!(dbContext.Imports is null))
+            if (dbContext.Imports is not null)
             {
                 foreach (var import in dbContext.Imports)
                 {
@@ -75,7 +75,7 @@ namespace bs.Data
                 }
             }
 
-            if (!(dbContext.Filters is null))
+            if (dbContext.Filters is not null)
             {
                 foreach (var filter in dbContext.Filters)
                 {
@@ -83,50 +83,46 @@ namespace bs.Data
                 }
             }
 
+
             // It use the right database integration properties by the database type choosen
             switch (dbContext.DatabaseEngineType)
             {
                 case DbType.MySQL:
                     databaseIntegration.Dialect<MySQL55Dialect>();
-                    databaseIntegration.ConnectionString = dbContext.ConnectionString;
                     break;
 
                 case DbType.MySQL57:
                     databaseIntegration.Dialect<MySQL57Dialect>();
-                    databaseIntegration.ConnectionString = dbContext.ConnectionString;
                     break;
 
                 case DbType.SQLite:
-                    databaseIntegration.Driver<NHibernate.Driver.SQLite20Driver>();
+                    databaseIntegration.Driver<SQLite20Driver>();
                     databaseIntegration.Dialect<SQLiteDialect>();
-                    databaseIntegration.ConnectionString = dbContext.ConnectionString;
                     break;
 
                 case DbType.MsSql2012:
-                    databaseIntegration.Driver<NHibernate.Driver.SqlClientDriver>();
+                    databaseIntegration.Driver<MicrosoftDataSqlClientDriver>();
                     databaseIntegration.Dialect<MsSql2012Dialect>();
-                    databaseIntegration.ConnectionString = dbContext.ConnectionString;
                     break;
 
                 case DbType.MsSql2008:
-                    databaseIntegration.Driver<NHibernate.Driver.SqlClientDriver>();
+                    databaseIntegration.Driver<MicrosoftDataSqlClientDriver>();
                     databaseIntegration.Dialect<MsSql2008Dialect>();
-                    databaseIntegration.ConnectionString = dbContext.ConnectionString;
                     break;
 
                 case DbType.PostgreSQL:
                     databaseIntegration.Dialect<PostgreSQL82Dialect>();
-                    databaseIntegration.ConnectionString = dbContext.ConnectionString;
                     break;
 
                 case DbType.PostgreSQL83:
                     databaseIntegration.Dialect<PostgreSQL83Dialect>();
-                    databaseIntegration.ConnectionString = dbContext.ConnectionString;
                     break;
 
                 default:
                     throw new ORMException("The Database Engine Type selected is not supported in current version.");
             }
+            databaseIntegration.ConnectionString = dbContext.ConnectionString;
+
 
             // sets creation, updation, recreation or simple validation of schema
             if (dbContext.Create && dbContext.Update)
@@ -171,7 +167,6 @@ namespace bs.Data
             try
             {
                 services.AddSingleton(sessionFactory);
-                //services.AddScoped(factory => sessionFactory.OpenSession());
 
                 services.AddScoped((provider) =>
                 {

@@ -6,19 +6,15 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace bs.Data.UserTypes
 {
     public class DelimitedList : IUserType
     {
         private const string delimiter = "|@@|";
-        public SqlType[] SqlTypes => new SqlType[] { new StringSqlType() };
-
-        public Type ReturnedType => typeof(ICollection<string>);
-
         public bool IsMutable => false;
+        public Type ReturnedType => typeof(ICollection<string>);
+        public SqlType[] SqlTypes => new SqlType[] { new StringSqlType() };
 
         public object Assemble(object cached, object owner)
         {

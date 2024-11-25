@@ -17,7 +17,6 @@ namespace bs.Data.TestAsync
         [Fact]
         public async Task Test_SqlServerAsync()
         {
-            //CreateUnitOfWork_SqlServer();
             CreateUnitOfWork_Postgresql();
             var uow = serviceProvider.GetService<IUnitOfWork>();
             var repo = serviceProvider.GetService<BsDataRepository>();
@@ -36,8 +35,8 @@ namespace bs.Data.TestAsync
                 Age = 40,
                 ContactDate = new DateTime(2020, 9, 2, 0, 0, 0, DateTimeKind.Utc),
                 Description = "Simply me",
-                Photo = new byte[] { 12, 34, 76, 250, 1, 0, 44, 2 },
-                Tags = new List<string> { "1", "2", "3", "stella" }
+                Photo = [12, 34, 76, 250, 1, 0, 44, 2],
+                Tags = ["1", "2", "3", "stella"]
             };
             await repo.CreatePersonAsync(person1);
 
@@ -70,8 +69,8 @@ namespace bs.Data.TestAsync
                 Age = 28,
                 ContactDate = new DateTime(2018, 7, 2, 0, 0, 0, DateTimeKind.Utc),
                 Description = "Simply no one",
-                Photo = new byte[] { 60, 22, 115, 250, 20, 7, 44, 3 },
-                Tags = new[] { "Tag1 - |", " Tag 2 ", "Tag3" }
+                Photo = [60, 22, 115, 250, 20, 7, 44, 3],
+                Tags = ["Tag1 - |", " Tag 2 ", "Tag3"]
             };
             await repo.CreatePersonAsync(person2);
 
@@ -99,20 +98,17 @@ namespace bs.Data.TestAsync
 
             var rooms = new List<RoomModel>
                 {
-                    new RoomModel
-                    {
+                    new() {
                         Name = "RECEPTION",
-                        Persons = new PersonModel[] { person1, person2 }
+                        Persons = [person1, person2]
                     },
-                    new RoomModel
-                    {
+                    new() {
                         Name = "ADMINISTRATION",
-                        Persons = new PersonModel[] { person2 }
+                        Persons = [person2]
                     },
-                    new RoomModel
-                    {
+                    new() {
                         Name = "ICT",
-                        Persons = new PersonModel[] { person1 }
+                        Persons = [person1]
                     }
                 };
 
@@ -142,7 +138,7 @@ namespace bs.Data.TestAsync
             // if no exception occurred it worked fine
         }
 
-        private async Task TransactionInterupted(IUnitOfWork uow, BsDataRepository repo)
+        private static async Task TransactionInterupted(IUnitOfWork uow, BsDataRepository repo)
         {
             await uow.RunInTransactionAsync(async () =>
             {
@@ -159,7 +155,7 @@ namespace bs.Data.TestAsync
                     Age = 64,
                     ContactDate = new DateTime(2021, 2, 16, 0, 0, 0, DateTimeKind.Utc),
                     Description = "Simply me",
-                    Photo = new byte[] { 12, 34, 76, 250, 1, 0, 44, 2 }
+                    Photo = [12, 34, 76, 250, 1, 0, 44, 2]
                 };
                 await repo.CreatePersonAsync(person1);
 
@@ -192,7 +188,7 @@ namespace bs.Data.TestAsync
                     Age = 28,
                     ContactDate = new DateTime(2020, 9, 2, 0, 0, 0, DateTimeKind.Utc),
                     Description = "Simply no one",
-                    Photo = new byte[] { 60, 22, 115, 250, 20, 7, 44, 3 }
+                    Photo = [60, 22, 115, 250, 20, 7, 44, 3]
                 };
                 await repo.CreatePersonAsync(person2);
 
@@ -220,20 +216,17 @@ namespace bs.Data.TestAsync
 
                 var rooms = new List<RoomModel>
                 {
-                    new RoomModel
-                    {
+                    new() {
                         Name = "RECEPTION",
-                        Persons = new PersonModel[] { person1, person2 }
+                        Persons = [person1, person2]
                     },
-                    new RoomModel
-                    {
+                    new() {
                         Name = "ADMINISTRATION",
-                        Persons = new PersonModel[] { person2 }
+                        Persons = [person2]
                     },
-                    new RoomModel
-                    {
+                    new() {
                         Name = "ICT",
-                        Persons = new PersonModel[] { person1 }
+                        Persons = [person1]
                     }
                 };
 

@@ -22,7 +22,7 @@ namespace bs.Data
         /// Initializes a new instance of the <see cref="Repository"/> class.
         /// </summary>
         /// <param name="unitOfwork">The unit ofwork.</param>
-        public Repository(IUnitOfWork unitOfwork)
+        protected Repository(IUnitOfWork unitOfwork)
         {
             this.unitOfwork = unitOfwork;
         }

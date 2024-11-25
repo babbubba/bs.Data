@@ -1,7 +1,7 @@
 ﻿using bs.Data.Interfaces;
+using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq;
 
 namespace bs.Data.Helpers
@@ -21,8 +21,7 @@ namespace bs.Data.Helpers
         /// <exception cref="ArgumentNullException">policies</exception>
         public ChainingPolicy(IEnumerable<IRetryPolicy> policies)
         {
-            if (policies == null) throw new ArgumentNullException("policies");
-            this.policies = policies;
+            this.policies = policies ?? throw new ArgumentNullException("policies");
         }
 
         /// <summary>

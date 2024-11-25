@@ -24,8 +24,7 @@ namespace bs.Data.Helpers
         /// <exception cref="ArgumentNullException">policy</exception>
         private RetryPolicies(IRetryPolicy policy)
         {
-            if (policy == null) throw new ArgumentNullException("policy");
-            this.policy = policy;
+            this.policy = policy ?? throw new ArgumentNullException("policy");
         }
 
         /// <summary>
