@@ -7,8 +7,8 @@
     <Company>bSoft</Company>
     <Description>Nhibernate based Repository with facilities.
 Supports: SqlServer, MySql, Sqlite, PostgreeSql</Description>
-    <AssemblyVersion>5.1.0.0</AssemblyVersion>
-    <FileVersion>5.1.0.0</FileVersion>
+    <AssemblyVersion>5.1.1.0</AssemblyVersion>
+    <FileVersion>5.7.0.0</FileVersion>
     <Version>$(AssemblyVersion)</Version>
     <Copyright>Fabio Cavallari @ bSoft</Copyright>
     <PackageProjectUrl>https://github.com/babbubba/bs.Data</PackageProjectUrl>
@@ -18,11 +18,12 @@ Supports: SqlServer, MySql, Sqlite, PostgreeSql</Description>
     <PackageIconUrl />
     <PackageLicenseExpression></PackageLicenseExpression>
     <PackageLicenseFile>license.txt</PackageLicenseFile>
-    <Platforms>x64</Platforms>
+    <Platforms>AnyCPU;x64;x86</Platforms>
     <Title>$(AssemblyName)</Title>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>ORM;nHibernate;Repository</PackageTags>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
