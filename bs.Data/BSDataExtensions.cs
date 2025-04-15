@@ -184,7 +184,7 @@ namespace bs.Data
             }
             catch (SchemaValidationException schemaValidationEx)
             {
-                throw new ORMException($"Error validating schema:\n{string.Join(";\n ", schemaValidationEx.ValidationErrors)}", schemaValidationEx);
+                throw new ORMException($"Error validating schema:\n{string.Join(";\n- ", schemaValidationEx.ValidationErrors)}", schemaValidationEx);
             }
             catch (System.Exception ex)
             {
