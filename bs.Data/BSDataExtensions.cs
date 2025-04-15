@@ -44,6 +44,34 @@ namespace bs.Data
             // Create the mapper
             var mapper = new ModelMapper();
 
+            mapper.BeforeMapProperty += (modelInspector, propertyPath, propertyCustomizer) =>
+            {
+                if(dbContext.DatabaseEngineType == DbType.PostgreSQL || dbContext.DatabaseEngineType == DbType.PostgreSQL83)
+                {
+                    // Risolve l'ambiguità  tra il tipo numeric con precisione 19,5 di postgres ed il tipo decimal di c#
+                    // Ricavo il tipo .NET della property
+                    var memberType = propertyPath.LocalMember.GetPropertyOrFieldType();
+
+                    // Se è un decimal o decimal?...
+                    if (memberType == typeof(decimal) || memberType == typeof(decimal?))
+                    {
+                        // 1) Dico a NH che è decimal
+                        propertyCustomizer.Type(NHibernateUtil.Decimal);
+
+                        // 2) Imposto precision e scale
+                        propertyCustomizer.Precision(19);
+                        propertyCustomizer.Scale(5);
+
+                        // 3) Forzo l'uso di "numeric(19,5)" come SqlType
+                        propertyCustomizer.Column(c => {
+                            c.SqlType("numeric(19,5)");
+                        });
+                    }
+                }
+               
+            };
+
+
             // Add the entities defined in this assemblies
             mapper.AddMappings(typeof(BSDataExtensions).Assembly.ExportedTypes);
 
