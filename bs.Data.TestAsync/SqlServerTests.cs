@@ -1,6 +1,5 @@
 using bs.Data.Helpers;
 using bs.Data.Interfaces;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,24 +8,26 @@ using Xunit;
 
 namespace bs.Data.TestAsync
 {
-    public class UnitTest1
+    public class SqlServerTests : IClassFixture<SqlServerFixture>
     {
-        private IServiceProvider serviceProvider;
-        private IServiceCollection services;
+        private readonly BsDataRepository _repo;
+        private readonly IUnitOfWork _uow;
+
+        public SqlServerTests(SqlServerFixture fixture)
+        {
+            _repo = fixture.Repository;
+            _uow = fixture.UnitOfWork;
+        }
 
         [Fact]
         public async Task Test_SqlServerAsync()
         {
-            CreateUnitOfWork_Postgresql();
-            var uow = serviceProvider.GetService<IUnitOfWork>();
-            var repo = serviceProvider.GetService<BsDataRepository>();
-
-            uow.BeginTransaction();
+            _uow.BeginTransaction();
             var country = new CountryModel
             {
                 Name = "Italy"
             };
-            await repo.CreateCountryAsync(country);
+            await _repo.CreateCountryAsync(country);
 
             var person1 = new PersonModel
             {
@@ -38,7 +39,7 @@ namespace bs.Data.TestAsync
                 Photo = [12, 34, 76, 250, 1, 0, 44, 2],
                 Tags = ["1", "2", "3", "stella"]
             };
-            await repo.CreatePersonAsync(person1);
+            await _repo.CreatePersonAsync(person1);
 
             var p1a1 = new AddressModel
             {
@@ -47,7 +48,7 @@ namespace bs.Data.TestAsync
                 StreetName = "Via liguria, 34/12",
                 Person = person1
             };
-            await repo.CreateAddressAsync(p1a1);
+            await _repo.CreateAddressAsync(p1a1);
             person1.Addresses.Add(p1a1);
 
             var p1a2 = new AddressModel
@@ -57,10 +58,10 @@ namespace bs.Data.TestAsync
                 StreetName = "Corso del popolo, 112",
                 Person = person1
             };
-            await repo.CreateAddressAsync(p1a2);
+            await _repo.CreateAddressAsync(p1a2);
             person1.Addresses.Add(p1a2);
 
-            await repo.UpdatePersonAsync(person1);
+            await _repo.UpdatePersonAsync(person1);
 
             var person2 = new PersonModel
             {
@@ -72,7 +73,7 @@ namespace bs.Data.TestAsync
                 Photo = [60, 22, 115, 250, 20, 7, 44, 3],
                 Tags = ["Tag1 - |", " Tag 2 ", "Tag3"]
             };
-            await repo.CreatePersonAsync(person2);
+            await _repo.CreatePersonAsync(person2);
 
             var p2a1 = new AddressModel
             {
@@ -81,7 +82,7 @@ namespace bs.Data.TestAsync
                 StreetName = "Via carlo rosselli, 2",
                 Person = person2,
             };
-            await repo.CreateAddressAsync(p2a1);
+            await _repo.CreateAddressAsync(p2a1);
             person2.Addresses.Add(p2a1);
 
             var p2a2 = new AddressModel
@@ -91,10 +92,10 @@ namespace bs.Data.TestAsync
                 StreetName = "Corso francia, 1112",
                 Person = person2
             };
-            await repo.CreateAddressAsync(p2a2);
+            await _repo.CreateAddressAsync(p2a2);
             person2.Addresses.Add(p2a2);
 
-            await repo.UpdatePersonAsync(person2);
+            await _repo.UpdatePersonAsync(person2);
 
             var rooms = new List<RoomModel>
                 {
@@ -112,41 +113,30 @@ namespace bs.Data.TestAsync
                     }
                 };
 
-            rooms.ForEach(async a => await repo.CreateRoomAsync(a));
-            await uow.TryCommitOrRollbackAsync();
+            rooms.ForEach(async a => await _repo.CreateRoomAsync(a));
+            await _uow.TryCommitOrRollbackAsync();
 
-            uow.BeginTransaction();
-            var personsRet = (await repo.GetPersonsAsync()).ToList();
-            repo.DeletePersonLogically(personsRet.Last());
-            await uow.TryCommitOrRollbackAsync();
+            _uow.BeginTransaction();
+            var personsRet = (await _repo.GetPersonsAsync()).ToList();
+            _repo.DeletePersonLogically(personsRet.Last());
+            await _uow.TryCommitOrRollbackAsync();
 
-            uow.BeginTransaction();
-            var personsRet2 = await repo.GetPersonsLogicallyNotDeletedAsync();
+            _uow.BeginTransaction();
+            var personsRet2 = await _repo.GetPersonsLogicallyNotDeletedAsync();
             Assert.NotNull(personsRet.FirstOrDefault());
-            await uow.TryCommitOrRollbackAsync();
+            await _uow.TryCommitOrRollbackAsync();
         }
 
         [Fact]
-        public async Task Test_interrupted_transaction_SqlServerAsync()
+        public async Task TransactionInterupted()
         {
-            CreateUnitOfWork_SqlServer();
-            var uow = serviceProvider.GetService<IUnitOfWork>();
-            var repo = serviceProvider.GetService<BsDataRepository>();
-
-            await TransactionInterupted(uow, repo);
-
-            // if no exception occurred it worked fine
-        }
-
-        private static async Task TransactionInterupted(IUnitOfWork uow, BsDataRepository repo)
-        {
-            await uow.RunInTransactionAsync(async () =>
+            await _uow.RunInTransactionAsync(async () =>
             {
                 var country = new CountryModel
                 {
                     Name = "United Kindom"
                 };
-                await repo.CreateCountryAsync(country);
+                await _repo.CreateCountryAsync(country);
 
                 var person1 = new PersonModel
                 {
@@ -157,7 +147,7 @@ namespace bs.Data.TestAsync
                     Description = "Simply me",
                     Photo = [12, 34, 76, 250, 1, 0, 44, 2]
                 };
-                await repo.CreatePersonAsync(person1);
+                await _repo.CreatePersonAsync(person1);
 
                 var p1a1 = new AddressModel
                 {
@@ -166,7 +156,7 @@ namespace bs.Data.TestAsync
                     StreetName = "Via liguria, 34/12",
                     Person = person1
                 };
-                await repo.CreateAddressAsync(p1a1);
+                await _repo.CreateAddressAsync(p1a1);
                 person1.Addresses.Add(p1a1);
 
                 var p1a2 = new AddressModel
@@ -176,10 +166,10 @@ namespace bs.Data.TestAsync
                     StreetName = "Corso del popolo, 112",
                     Person = person1
                 };
-                await repo.CreateAddressAsync(p1a2);
+                await _repo.CreateAddressAsync(p1a2);
                 person1.Addresses.Add(p1a2);
 
-                await repo.UpdatePersonAsync(person1);
+                await _repo.UpdatePersonAsync(person1);
 
                 var person2 = new PersonModel
                 {
@@ -190,7 +180,7 @@ namespace bs.Data.TestAsync
                     Description = "Simply no one",
                     Photo = [60, 22, 115, 250, 20, 7, 44, 3]
                 };
-                await repo.CreatePersonAsync(person2);
+                await _repo.CreatePersonAsync(person2);
 
                 var p2a1 = new AddressModel
                 {
@@ -199,7 +189,7 @@ namespace bs.Data.TestAsync
                     StreetName = "Via carlo rosselli, 2",
                     Person = person2
                 };
-                await repo.CreateAddressAsync(p2a1);
+                await _repo.CreateAddressAsync(p2a1);
                 person2.Addresses.Add(p2a1);
 
                 var p2a2 = new AddressModel
@@ -209,10 +199,10 @@ namespace bs.Data.TestAsync
                     StreetName = "Corso francia, 1112",
                     Person = person2
                 };
-                await repo.CreateAddressAsync(p2a2);
+                await _repo.CreateAddressAsync(p2a2);
                 person2.Addresses.Add(p2a2);
 
-                await repo.UpdatePersonAsync(person2);
+                await _repo.UpdatePersonAsync(person2);
 
                 var rooms = new List<RoomModel>
                 {
@@ -230,52 +220,52 @@ namespace bs.Data.TestAsync
                     }
                 };
 
-                rooms.ForEach(async a => await repo.CreateRoomAsync(a));
+                rooms.ForEach(async a => await _repo.CreateRoomAsync(a));
 
                 // now we emulate a situation were we have to rollback the transaction
-                await uow.RollbackAsync();
+                await _uow.RollbackAsync();
 
                 //after we have to exit this method
                 return;
 
-                // when disposing the uow the extension thata usually have to commit or rollback have not to do it...
+                // when disposing the _uow the extension thata usually have to commit or rollback have not to do it...
             });
         }
 
-        private void CreateUnitOfWork_SqlServer()
-        {
-            var dbContext = new DbContext
-            {
-                ConnectionString = "Persist Security Info=False;Integrated Security=SSPI; database = OrmTest; server = (local)",
-                DatabaseEngineType = DbType.MsSql2012,
-                Create = true,
-                Update = true,
-                LookForEntitiesDllInCurrentDirectoryToo = false,
-                SetBatchSize = 25
-            };
-            services = new ServiceCollection();
-            services.AddBsData(dbContext);
-            services.AddSingleton<BsDataRepository>();
-            serviceProvider = services.BuildServiceProvider();
-        }
+        //private void CreateUnitOfWork_SqlServer()
+        //{
+        //    var dbContext = new DbContext
+        //    {
+        //        ConnectionString = "database = OrmTest; server = 192.168.254.13; user = sa; password = Password01;TrustServerCertificate=true;",
+        //        DatabaseEngineType = DbType.MsSql2012,
+        //        Create = true,
+        //        Update = true,
+        //        LookForEntitiesDllInCurrentDirectoryToo = false,
+        //        SetBatchSize = 25
+        //    };
+        //    services = new ServiceCollection();
+        //    services.AddBsData(dbContext);
+        //    services.AddSingleton<BsDataRepository>();
+        //    serviceProvider = services.BuildServiceProvider();
+        //}
 
-        private void CreateUnitOfWork_Postgresql()
-        {
-            var dbContext = new DbContext
-            {
-                //ConnectionString = "User ID=italcom;Password=Password01;Host=ITA-TO-GEL01;Port=5432;Database=ormtest;Pooling=true;Connection Lifetime=0;",
-                ConnectionString = "User ID=postgres;Password=Password01!;Host=192.168.254.38;Port=5432;Database=ormtest",
+        //private void CreateUnitOfWork_Postgresql()
+        //{
+        //    var dbContext = new DbContext
+        //    {
+        //        //ConnectionString = "User ID=italcom;Password=Password01;Host=ITA-TO-GEL01;Port=5432;Database=ormtest;Pooling=true;Connection Lifetime=0;",
+        //        ConnectionString = "User ID=postgres;Password=Password01!;Host=192.168.254.38;Port=5432;Database=ormtest",
 
-                DatabaseEngineType = DbType.PostgreSQL83,
-                Create = true,
-                Update = true,
-                LookForEntitiesDllInCurrentDirectoryToo = false,
-                SetBatchSize = 25
-            };
-            services = new ServiceCollection();
-            services.AddBsData(dbContext);
-            services.AddSingleton<BsDataRepository>();
-            serviceProvider = services.BuildServiceProvider();
-        }
+        //        DatabaseEngineType = DbType.PostgreSQL83,
+        //        Create = true,
+        //        Update = true,
+        //        LookForEntitiesDllInCurrentDirectoryToo = false,
+        //        SetBatchSize = 25
+        //    };
+        //    services = new ServiceCollection();
+        //    services.AddBsData(dbContext);
+        //    services.AddSingleton<BsDataRepository>();
+        //    serviceProvider = services.BuildServiceProvider();
+        //}
     }
 }

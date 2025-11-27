@@ -1,5 +1,7 @@
 ﻿using bs.Data.Helpers;
 using bs.Data.Interfaces;
+using bs.Data.Middleware;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using NHibernate;
 using NHibernate.Cfg;
@@ -7,209 +9,261 @@ using NHibernate.Cfg.MappingSchema;
 using NHibernate.Dialect;
 using NHibernate.Driver;
 using NHibernate.Mapping.ByCode;
+using System;
 using System.Linq;
+using System.Net.Http;
 
 namespace bs.Data
 {
+
     public static class BSDataExtensions
     {
         /// <summary>
-        /// This method used in the Startup register as services the ORM's Session Factory, the ORM's Session and the ORM's Unit of Work used by the repositories you will implements.
+        /// Registers NHibernate Session Factory, Session, and Unit of Work in the dependency injection container.
         /// </summary>
-        /// <param name="services">The services collection of the desired Dependency Controller Container of your application.</param>
-        /// <param name="dbContext">The database context containing info about ORM's configuration.</param>
-        /// <returns></returns>
-        public static IServiceCollection AddBsData(this IServiceCollection services, IDbContext dbContext)
+        /// <param name="services">The service collection.</param>
+        /// <param name="ormContext">The database context containing ORM configuration.</param>
+        /// <returns>The service collection for chaining.</returns>
+        public static IServiceCollection AddBsData(this IServiceCollection services, IDbContext ormContext)
         {
-            if (services is null)
+            ArgumentNullException.ThrowIfNull(services);
+            ArgumentNullException.ThrowIfNull(ormContext);
+
+            ValidateContext(ormContext);
+
+            var sessionFactory = BuildSessionFactory(ormContext);
+            RegisterServices(services, sessionFactory);
+
+            return services;
+        }
+
+        /// <summary>
+        /// Aggiunge il middleware per la gestione delle sessioni NHibernate.
+        /// va messo prima di UseAuthorization() e MapControllers();
+        /// </summary>
+        /// <param name="app">The application.</param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseBsData(this IApplicationBuilder app)
+        {
+            return app.UseMiddleware<NHibernateSessionMiddleware>();
+        }
+
+        private static void ValidateContext(IDbContext context)
+        {
+            if (context.DatabaseEngineType == DbType.Undefined)
             {
-                throw new System.ArgumentNullException(nameof(services), "ServiceCollection is mandatory to handle dependency injection in consumer application");
+                throw new ArgumentException("Database engine type must be specified.", nameof(context.DatabaseEngineType));
             }
 
-            if (dbContext is null)
+            if (string.IsNullOrWhiteSpace(context.ConnectionString))
             {
-                throw new System.ArgumentNullException(nameof(dbContext), "The context is mandatory to init the ORM");
+                throw new ArgumentException("Connection string cannot be null or empty.", nameof(context.ConnectionString));
             }
+        }
 
-            if (dbContext.DatabaseEngineType == DbType.Undefined)
-            {
-                throw new System.ArgumentOutOfRangeException(nameof(dbContext.DatabaseEngineType), "The Database Engine Type is mandatory to init the ORM");
-            }
+        private static ISessionFactory BuildSessionFactory(IDbContext context)
+        {
+            var mapper = CreateMapper(context);
+            AddEntityMappings(mapper, context);
 
-            if (string.IsNullOrWhiteSpace(dbContext.ConnectionString))
-            {
-                throw new System.ArgumentOutOfRangeException(nameof(dbContext.ConnectionString), "Connection String to database is mandatory to init the ORM");
-            }
-
-            // Create the mapper
-            var mapper = new ModelMapper();
-
-            mapper.BeforeMapProperty += (modelInspector, propertyPath, propertyCustomizer) =>
-            {
-                if(dbContext.DatabaseEngineType == DbType.PostgreSQL || dbContext.DatabaseEngineType == DbType.PostgreSQL83)
-                {
-                    // Risolve l'ambiguità  tra il tipo numeric con precisione 19,5 di postgres ed il tipo decimal di c#
-                    // Ricavo il tipo .NET della property
-                    var memberType = propertyPath.LocalMember.GetPropertyOrFieldType();
-
-                    // Se è un decimal o decimal?...
-                    if (memberType == typeof(decimal) || memberType == typeof(decimal?))
-                    {
-                        // 1) Dico a NH che è decimal
-                        propertyCustomizer.Type(NHibernateUtil.Decimal);
-
-                        // 2) Imposto precision e scale
-                        propertyCustomizer.Precision(19);
-                        propertyCustomizer.Scale(5);
-
-                        // 3) Forzo l'uso di "numeric(19,5)" come SqlType
-                        propertyCustomizer.Column(c => {
-                            c.SqlType("numeric(19,5)");
-                        });
-                    }
-                }
-               
-            };
-
-
-            // Add the entities defined in this assemblies
-            mapper.AddMappings(typeof(BSDataExtensions).Assembly.ExportedTypes);
-
-            // Add the entities defined in other assemblies
-            try
-            {
-                var modelsAssemblies = ReflectionHelper.GetAssembliesFromFiles(dbContext.FoldersWhereLookingForEntitiesDll, dbContext.EntitiesFileNameScannerPatterns, dbContext.LookForEntitiesDllInCurrentDirectoryToo, dbContext.UseExecutingAssemblyToo);
-                mapper.AddMappings(modelsAssemblies.SelectMany(a => a.ExportedTypes));
-            }
-            catch (System.Exception ex)
-            {
-                throw new ORMException("Error lookig for mapping's types to register using reflection. See inner exceptions for details.", ex);
-            }
-
-            // Compile mapped entities
-            HbmMapping domainMapping = mapper.CompileMappingForAllExplicitlyAddedEntities();
+            var domainMapping = mapper.CompileMappingForAllExplicitlyAddedEntities();
             domainMapping.autoimport = true;
 
-            // Prepares configuration
+            var configuration = ConfigureNHibernate(context, domainMapping);
+
+            try
+            {
+                return configuration.BuildSessionFactory();
+            }
+            catch (SchemaValidationException ex)
+            {
+                var errors = string.Join("\n- ", ex.ValidationErrors);
+                throw new ORMException($"Schema validation failed:\n- {errors}", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new ORMException("Failed to build NHibernate session factory. See inner exception for details.", ex);
+            }
+        }
+
+        private static ModelMapper CreateMapper(IDbContext context)
+        {
+            var mapper = new ModelMapper();
+
+            // Configure decimal mapping for PostgreSQL
+            if (context.DatabaseEngineType == DbType.PostgreSQL ||
+                context.DatabaseEngineType == DbType.PostgreSQL83)
+            {
+                mapper.BeforeMapProperty += ConfigurePostgreSqlDecimalMapping;
+            }
+
+            return mapper;
+        }
+
+        private static void ConfigurePostgreSqlDecimalMapping(
+            IModelInspector modelInspector,
+            PropertyPath propertyPath,
+            IPropertyMapper propertyCustomizer)
+        {
+            var memberType = propertyPath.LocalMember.GetPropertyOrFieldType();
+
+            if (memberType == typeof(decimal) || memberType == typeof(decimal?))
+            {
+                propertyCustomizer.Type(NHibernateUtil.Decimal);
+                propertyCustomizer.Precision(19);
+                propertyCustomizer.Scale(5);
+                propertyCustomizer.Column(c => c.SqlType("numeric(19,5)"));
+            }
+        }
+
+        private static void AddEntityMappings(ModelMapper mapper, IDbContext context)
+        {
+            // Add mappings from current assembly
+            mapper.AddMappings(typeof(BSDataExtensions).Assembly.ExportedTypes);
+
+            // Add mappings from external assemblies
+            try
+            {
+                var assemblies = ReflectionHelper.GetAssembliesFromFiles(
+                    context.FoldersWhereLookingForEntitiesDll,
+                    context.EntitiesFileNameScannerPatterns,
+                    context.LookForEntitiesDllInCurrentDirectoryToo,
+                    context.UseExecutingAssemblyToo);
+
+                mapper.AddMappings(assemblies.SelectMany(a => a.ExportedTypes));
+            }
+            catch (Exception ex)
+            {
+                throw new ORMException("Failed to load entity mappings via reflection. See inner exception for details.", ex);
+            }
+        }
+
+        private static Configuration ConfigureNHibernate(IDbContext context, HbmMapping domainMapping)
+        {
             var configuration = new Configuration();
             var databaseIntegration = new NHibernate.Cfg.Loquacious.DbIntegrationConfigurationProperties(configuration);
 
-            // import extra not persistent model
-            if (dbContext.Imports is not null)
+            // Add imports and filters
+            AddImportsAndFilters(configuration, context);
+
+            // Configure database dialect and driver
+            ConfigureDatabaseDialect(databaseIntegration, context.DatabaseEngineType);
+
+            databaseIntegration.ConnectionString = context.ConnectionString;
+            databaseIntegration.SchemaAction = DetermineSchemaAction(context);
+            databaseIntegration.LogFormattedSql = context.LogFormattedSql;
+            databaseIntegration.LogSqlInConsole = context.LogSqlInConsole;
+            databaseIntegration.KeywordsAutoImport = Hbm2DDLKeyWords.AutoQuote;
+
+            try
             {
-                foreach (var import in dbContext.Imports)
+                configuration.AddMapping(domainMapping);
+            }
+            catch (Exception ex)
+            {
+                throw new ORMException("Failed to add entity mappings to NHibernate configuration. See inner exception for details.", ex);
+            }
+
+            return configuration;
+        }
+
+        private static void AddImportsAndFilters(Configuration configuration, IDbContext context)
+        {
+            if (context.Imports != null)
+            {
+                foreach (var import in context.Imports)
                 {
                     configuration.Imports.Add(import);
                 }
             }
 
-            if (dbContext.Filters is not null)
+            if (context.Filters != null)
             {
-                foreach (var filter in dbContext.Filters)
+                foreach (var filter in context.Filters)
                 {
                     configuration.AddFilterDefinition(filter);
                 }
             }
+        }
 
-
-            // It use the right database integration properties by the database type choosen
-            switch (dbContext.DatabaseEngineType)
+        private static void ConfigureDatabaseDialect(NHibernate.Cfg.Loquacious.DbIntegrationConfigurationProperties integration, DbType dbType)
+        {
+            switch (dbType)
             {
                 case DbType.MySQL:
-                    databaseIntegration.Dialect<MySQL55Dialect>();
+                    integration.Dialect<MySQL55Dialect>();
                     break;
 
                 case DbType.MySQL57:
-                    databaseIntegration.Dialect<MySQL57Dialect>();
+                    integration.Dialect<MySQL57Dialect>();
                     break;
 
                 case DbType.SQLite:
-                    databaseIntegration.Driver<SQLite20Driver>();
-                    databaseIntegration.Dialect<SQLiteDialect>();
+                    integration.Driver<SQLite20Driver>();
+                    integration.Dialect<SQLiteDialect>();
                     break;
 
                 case DbType.MsSql2012:
-                    databaseIntegration.Driver<MicrosoftDataSqlClientDriver>();
-                    databaseIntegration.Dialect<MsSql2012Dialect>();
+                    integration.Driver<MicrosoftDataSqlClientDriver>();
+                    integration.Dialect<MsSql2012Dialect>();
                     break;
 
                 case DbType.MsSql2008:
-                    databaseIntegration.Driver<MicrosoftDataSqlClientDriver>();
-                    databaseIntegration.Dialect<MsSql2008Dialect>();
+                    integration.Driver<MicrosoftDataSqlClientDriver>();
+                    integration.Dialect<MsSql2008Dialect>();
                     break;
 
                 case DbType.PostgreSQL:
-                    databaseIntegration.Dialect<PostgreSQL82Dialect>();
+                    integration.Dialect<PostgreSQL82Dialect>();
                     break;
 
                 case DbType.PostgreSQL83:
-                    databaseIntegration.Dialect<PostgreSQL83Dialect>();
+                    integration.Dialect<PostgreSQL83Dialect>();
                     break;
 
                 default:
-                    throw new ORMException("The Database Engine Type selected is not supported in current version.");
+                    throw new ORMException($"Database engine type '{dbType}' is not supported.");
             }
-            databaseIntegration.ConnectionString = dbContext.ConnectionString;
+        }
 
+        private static SchemaAutoAction DetermineSchemaAction(IDbContext context)
+        {
+            if (context.Create && context.Update)
+                return SchemaAutoAction.Recreate;
 
-            // sets creation, updation, recreation or simple validation of schema
-            if (dbContext.Create && dbContext.Update)
-                databaseIntegration.SchemaAction = SchemaAutoAction.Recreate;
-            else if (dbContext.Create)
-                databaseIntegration.SchemaAction = SchemaAutoAction.Create;
-            else if (dbContext.Update)
-                databaseIntegration.SchemaAction = SchemaAutoAction.Update;
-            else
-                databaseIntegration.SchemaAction = SchemaAutoAction.Validate;
+            if (context.Create)
+                return SchemaAutoAction.Create;
 
-            databaseIntegration.LogFormattedSql = dbContext.LogFormattedSql;
-            databaseIntegration.LogSqlInConsole = dbContext.LogSqlInConsole;
-            databaseIntegration.KeywordsAutoImport = Hbm2DDLKeyWords.AutoQuote;
+            if (context.Update)
+                return SchemaAutoAction.Update;
 
-            // Add entities mapping to configuration
+            return SchemaAutoAction.Validate;
+        }
+
+        private static void RegisterServices(IServiceCollection services, ISessionFactory sessionFactory)
+        {
             try
             {
-                configuration.AddMapping(domainMapping);
-            }
-            catch (System.Exception ex)
-            {
-                throw new ORMException("Error adding mappings to ORM. See inner exceptions for details.", ex);
-            }
-
-            // Create the session factory
-            ISessionFactory sessionFactory = null;
-            try
-            {
-                sessionFactory = configuration.BuildSessionFactory();
-            }
-            catch (SchemaValidationException schemaValidationEx)
-            {
-                throw new ORMException($"Error validating schema:\n{string.Join(";\n- ", schemaValidationEx.ValidationErrors)}", schemaValidationEx);
-            }
-            catch (System.Exception ex)
-            {
-                throw new ORMException("Error building ORM session factory. See inner exception for details", ex);
-            }
-
-            // Add to dependency injecton the factory (singleton) and session and unit of work (scoped)
-            try
-            {
+                // Register SessionFactory as singleton
                 services.AddSingleton(sessionFactory);
 
-                services.AddScoped((provider) =>
+                // Register ISession as scoped with proper disposal
+                services.AddScoped(provider =>
                 {
-                    // Replace the current instance of session factory with the injected one... it may help DI to avoid premature destruction of the session
-                    var factory = provider.GetService<ISessionFactory>();
-                    return factory.OpenSession();
+                    var factory = provider.GetRequiredService<ISessionFactory>();
+                    var session = factory.OpenSession();
+
+                    // Il container DI chiamerà (dovrebbe) Dispose automaticamente a fine scope
+                    return session;
                 });
+
+                // Register UnitOfWork as scoped
                 services.AddScoped<IUnitOfWork, UnitOfWork>();
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
-                throw new ORMException("Error registering services in the provided Service Collection. See inner exception for details.", ex);
+                throw new ORMException("Failed to register services in dependency injection container. See inner exception for details.", ex);
             }
-
-            return services;
         }
     }
 }

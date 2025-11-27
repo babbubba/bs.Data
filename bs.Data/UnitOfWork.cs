@@ -9,109 +9,102 @@ namespace bs.Data
     /// <summary>
     /// Unit of Work pattern for handling transactional operations
     /// </summary>
-    /// <seealso cref="bs.Data.Interfaces.IUnitOfWork" />
     public sealed class UnitOfWork : IUnitOfWork
     {
-        private bool disposedValue;
-        private ITransaction transaction;
+        private bool _disposed;
+        private ITransaction _transaction;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="UnitOfWork"/> class.
-        /// </summary>
-        /// <param name="session">The session.</param>
         public UnitOfWork(ISession session)
         {
-            this.Session = session;
+            Session = session ?? throw new ArgumentNullException(nameof(session));
         }
 
         public ISession Session { get; }
-        public bool TransactionIsNotNull => transaction is not null;
+        public bool TransactionIsNotNull => _transaction is not null;
 
         /// <summary>
-        /// Begins the transaction.
+        /// Begins a new transaction.
         /// </summary>
-        /// <exception cref="ORMException">This Unit of Work contains a live transaction. You have to close existing transaction before creating new one.</exception>
+        /// <exception cref="ORMException">Thrown when an active transaction already exists.</exception>
+        /// <exception cref="ObjectDisposedException">Thrown when the UnitOfWork has been disposed.</exception>
         public void BeginTransaction()
         {
-            if (transaction?.IsActive ?? false)
-                throw new ORMException("This Unit of Work contains a live transaction. You have to close existing transaction before creating new one.");
+            ThrowIfDisposed();
 
-            transaction = Session.BeginTransaction();
+            if (_transaction?.IsActive == true)
+                throw new ORMException("An active transaction already exists. Close it before creating a new one.");
+
+            _transaction = Session.BeginTransaction();
         }
 
         /// <summary>
-        /// Closes the current transaction (if a transaction exists).
+        /// Closes the current transaction if it exists.
         /// </summary>
         public void CloseTransaction()
         {
-            if (transaction != null)
-            {
-                transaction.Dispose();
-                transaction = null;
-            }
+            _transaction?.Dispose();
+            _transaction = null;
         }
 
         /// <summary>
-        /// Commits the current transaction in this session if this transaction was not rolled back before.
+        /// Commits the current transaction if it exists and wasn't rolled back.
         /// </summary>
         public void Commit()
         {
-            if (!(transaction?.WasRolledBack ?? true)) transaction.Commit();
-        }
+            ThrowIfDisposed();
 
-        /// <summary>
-        /// Commits the current transaction in this session asynchronously if this transaction was not rolled back before.
-        /// </summary>
-        public async Task CommitAsync()
-        {
-            if (!(transaction?.WasRolledBack ?? true)) await transaction.CommitAsync();
-        }
-
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            if (!disposedValue)
+            if (_transaction != null && !_transaction.WasRolledBack)
             {
-                if (transaction != null && transaction.IsActive)
-                {
-                    await TryCommitOrRollbackAsync();
-                    Session?.Dispose();
-                }
-
-                Dispose(false);
-                GC.SuppressFinalize(this);
+                _transaction.Commit();
             }
         }
 
         /// <summary>
-        /// Rollbacks the current transaction in this session
+        /// Commits the current transaction asynchronously if it exists and wasn't rolled back.
+        /// </summary>
+        public async Task CommitAsync()
+        {
+            ThrowIfDisposed();
+
+            if (_transaction != null && !_transaction.WasRolledBack)
+            {
+                await _transaction.CommitAsync();
+            }
+        }
+
+        /// <summary>
+        /// Rolls back the current transaction if it exists and wasn't committed.
         /// </summary>
         public void Rollback()
         {
-            if (!(transaction?.WasCommitted ?? true)) transaction.Rollback();
+            ThrowIfDisposed();
+
+            if (_transaction != null && !_transaction.WasCommitted)
+            {
+                _transaction.Rollback();
+            }
         }
 
         /// <summary>
-        /// Rollbacks the current transaction in this session asynchronously.
+        /// Rolls back the current transaction asynchronously if it exists and wasn't committed.
         /// </summary>
         public async Task RollbackAsync()
         {
-            if (!(transaction?.WasCommitted ?? true)) await transaction.RollbackAsync();
+            ThrowIfDisposed();
+
+            if (_transaction != null && !_transaction.WasCommitted)
+            {
+                await _transaction.RollbackAsync();
+            }
         }
 
         /// <summary>
-        /// Tries to commit the current transaction in this session if exception occurs rollback transaction and throw the exception.
+        /// Attempts to commit the transaction. Rolls back on exception.
         /// </summary>
         public void TryCommitOrRollback()
         {
+            ThrowIfDisposed();
+
             try
             {
                 Commit();
@@ -128,10 +121,12 @@ namespace bs.Data
         }
 
         /// <summary>
-        /// Tries to commit the current transaction in this session if exception occurs rollback transaction asynchronously and throw the exception.
+        /// Attempts to commit the transaction asynchronously. Rolls back on exception.
         /// </summary>
         public async Task TryCommitOrRollbackAsync()
         {
+            ThrowIfDisposed();
+
             try
             {
                 await CommitAsync();
@@ -147,22 +142,47 @@ namespace bs.Data
             }
         }
 
-        private void Dispose(bool disposing)
+        public void Dispose()
         {
-            if (!disposedValue)
+            if (_disposed) return;
+
+            try
             {
-                if (disposing)
+                if (_transaction?.IsActive == true)
                 {
-                    if (transaction != null && transaction.IsActive)
-                    {
-                        TryCommitOrRollback();
-                    }
-
-                    Session?.Dispose();
+                    TryCommitOrRollback();
                 }
-
-                disposedValue = true;
             }
+            finally
+            {
+                Session?.Dispose();
+                _disposed = true;
+            }
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            if (_disposed) return;
+
+            try
+            {
+                if (_transaction?.IsActive == true)
+                {
+                    await TryCommitOrRollbackAsync();
+                }
+            }
+            finally
+            {
+                Session?.Dispose();
+                _disposed = true;
+                GC.SuppressFinalize(this);
+            }
+        }
+
+        private void ThrowIfDisposed()
+        {
+            if (_disposed)
+                throw new ObjectDisposedException(nameof(UnitOfWork));
         }
     }
 }
