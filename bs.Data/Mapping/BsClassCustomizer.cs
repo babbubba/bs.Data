@@ -327,19 +327,5 @@ namespace bs.Data.Mapping
 
         #endregion Implementation of IEntitySqlsMapper
 
-        //public void SetManyToOne<TProperty>(Expression<Func<TEntity, TProperty>> property, string refColumn, string fkName = null)
-        //    where TProperty : class
-        //{
-        //    Action<IManyToOneMapper> mapping = map =>
-        //    {
-        //        map.Column(refColumn);
-        //        if(fkName!=null)
-        //        {
-        //            map.ForeignKey(fkName);
-        //        }
-        //    };
-
-        //    RegisterManyToOneMapping(property, mapping);
-        //}
     }
 }

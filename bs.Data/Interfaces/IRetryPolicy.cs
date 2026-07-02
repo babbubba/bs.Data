@@ -1,9 +1,10 @@
 ﻿using Microsoft.Data.SqlClient;
+using System.Threading.Tasks;
 
 namespace bs.Data.Interfaces
 {
-    public interface IRetryPolicy
+    internal interface IRetryPolicy
     {
-        bool PerformRetry(SqlException ex);
+        Task<bool> PerformRetryAsync(SqlException ex);
     }
 }

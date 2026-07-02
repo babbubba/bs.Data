@@ -1,7 +1,7 @@
 ﻿using bs.Data.Interfaces;
 using Microsoft.Data.SqlClient;
 using System;
-using System.Threading;
+using System.Threading.Tasks;
 
 namespace bs.Data.Helpers
 {
@@ -20,13 +20,12 @@ namespace bs.Data.Helpers
         }
 
         /// <summary>
-        /// Performs the retry.
+        /// Waits with exponential back-off and returns whether another retry should be attempted.
+        /// Uses <see cref="Task.Delay"/> to avoid blocking the calling thread.
         /// </summary>
-        /// <param name="ex">The ex.</param>
-        /// <returns></returns>
-        public bool PerformRetry(SqlException ex)
+        public async Task<bool> PerformRetryAsync(SqlException ex)
         {
-            Thread.Sleep(currentWait);
+            await Task.Delay(currentWait);
             currentWait = currentWait == TimeSpan.Zero ? TimeSpan.FromMilliseconds(20) : currentWait + currentWait;
             return currentWait <= maxWait;
         }

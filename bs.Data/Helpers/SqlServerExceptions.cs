@@ -13,8 +13,9 @@ namespace bs.Data.Helpers
         /// </returns>
         public static bool IsThisADeadlock(SqlException realException)
         {
-            // The SQLException error code for DeadLock is 1205
-            return realException.ErrorCode == 1205;
+            // SqlException.Number is the SQL Server error number (1205 = deadlock victim).
+            // Note: ErrorCode returns the COM HResult (-2146232060 for all SqlExceptions) and must NOT be used here.
+            return realException.Number == 1205;
         }
     }
 }

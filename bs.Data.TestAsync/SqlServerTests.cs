@@ -10,11 +10,13 @@ namespace bs.Data.TestAsync
 {
     public class SqlServerTests : IClassFixture<SqlServerFixture>
     {
+        private readonly SqlServerFixture _fixture;
         private readonly BsDataRepository _repo;
         private readonly IUnitOfWork _uow;
 
         public SqlServerTests(SqlServerFixture fixture)
         {
+            _fixture = fixture;
             _repo = fixture.Repository;
             _uow = fixture.UnitOfWork;
         }
@@ -22,6 +24,9 @@ namespace bs.Data.TestAsync
         [Fact]
         public async Task Test_SqlServerAsync()
         {
+            if (!_fixture.IsConfigured)
+                Assert.Skip("Set env var BSDATA_SQLSERVER_CONNSTRING to run this test");
+
             _uow.BeginTransaction();
             var country = new CountryModel
             {
@@ -113,7 +118,7 @@ namespace bs.Data.TestAsync
                     }
                 };
 
-            rooms.ForEach(async a => await _repo.CreateRoomAsync(a));
+            foreach (var room in rooms) await _repo.CreateRoomAsync(room);
             await _uow.TryCommitOrRollbackAsync();
 
             _uow.BeginTransaction();
@@ -130,6 +135,9 @@ namespace bs.Data.TestAsync
         [Fact]
         public async Task TransactionInterupted()
         {
+            if (!_fixture.IsConfigured)
+                Assert.Skip("Set env var BSDATA_SQLSERVER_CONNSTRING to run this test");
+
             await _uow.RunInTransactionAsync(async () =>
             {
                 var country = new CountryModel
@@ -220,7 +228,7 @@ namespace bs.Data.TestAsync
                     }
                 };
 
-                rooms.ForEach(async a => await _repo.CreateRoomAsync(a));
+                foreach (var room in rooms) await _repo.CreateRoomAsync(room);
 
                 // now we emulate a situation were we have to rollback the transaction
                 await _uow.RollbackAsync();

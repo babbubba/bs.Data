@@ -11,7 +11,6 @@ using NHibernate.Driver;
 using NHibernate.Mapping.ByCode;
 using System;
 using System.Linq;
-using System.Net.Http;
 
 namespace bs.Data
 {
@@ -155,6 +154,10 @@ namespace bs.Data
             databaseIntegration.LogSqlInConsole = context.LogSqlInConsole;
             databaseIntegration.KeywordsAutoImport = Hbm2DDLKeyWords.AutoQuote;
 
+            // Apply batch size from context configuration (controls number of INSERT/UPDATE per DB round-trip)
+            if (context.SetBatchSize > 0)
+                configuration.SetProperty("adonet.batch_size", context.SetBatchSize.ToString());
+
             try
             {
                 configuration.AddMapping(domainMapping);
@@ -191,10 +194,12 @@ namespace bs.Data
             switch (dbType)
             {
                 case DbType.MySQL:
+                    integration.Driver<MySqlDataDriver>();
                     integration.Dialect<MySQL55Dialect>();
                     break;
 
                 case DbType.MySQL57:
+                    integration.Driver<MySqlDataDriver>();
                     integration.Dialect<MySQL57Dialect>();
                     break;
 

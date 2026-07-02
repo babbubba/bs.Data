@@ -2,14 +2,13 @@
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Threading.Tasks;
 
 namespace bs.Data.Helpers
 {
     /// <summary>
-    ///
+    /// Chains multiple <see cref="IRetryPolicy"/> instances: all policies must agree to retry.
     /// </summary>
-    /// <seealso cref="bs.Data.Interfaces.IRetryPolicy" />
     internal class ChainingPolicy : IRetryPolicy
     {
         private readonly IEnumerable<IRetryPolicy> policies;
@@ -21,17 +20,20 @@ namespace bs.Data.Helpers
         /// <exception cref="ArgumentNullException">policies</exception>
         public ChainingPolicy(IEnumerable<IRetryPolicy> policies)
         {
-            this.policies = policies ?? throw new ArgumentNullException("policies");
+            this.policies = policies ?? throw new ArgumentNullException(nameof(policies));
         }
 
         /// <summary>
-        /// Performs the retry.
+        /// Returns true only if every policy in the chain agrees to retry.
         /// </summary>
-        /// <param name="ex">The ex.</param>
-        /// <returns></returns>
-        public bool PerformRetry(SqlException ex)
+        public async Task<bool> PerformRetryAsync(SqlException ex)
         {
-            return policies.Aggregate(true, (val, policy) => val && policy.PerformRetry(ex));
+            foreach (var policy in policies)
+            {
+                if (!await policy.PerformRetryAsync(ex))
+                    return false;
+            }
+            return true;
         }
     }
 }

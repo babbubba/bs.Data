@@ -1,6 +1,7 @@
 ﻿using bs.Data.Interfaces;
 using Microsoft.Data.SqlClient;
 using System;
+using System.Threading.Tasks;
 
 namespace bs.Data.Helpers
 {
@@ -16,22 +17,21 @@ namespace bs.Data.Helpers
         /// <exception cref="ArgumentOutOfRangeException">maxRetry</exception>
         public SqlServerRetryPolicy(int maxRetry)
         {
-            if (maxRetry < 1) throw new ArgumentOutOfRangeException("maxRetry");
+            if (maxRetry < 1) throw new ArgumentOutOfRangeException(nameof(maxRetry));
             this.maxRetry = maxRetry;
         }
 
         /// <summary>
-        /// Performs the retry if the error was a DeadLock and try counter has not reached the limit.
+        /// Returns whether a retry should be attempted: only if the exception is a deadlock
+        /// and the retry counter has not reached the configured limit.
         /// </summary>
-        /// <param name="ex">The ex.</param>
-        /// <returns></returns>
-        public bool PerformRetry(SqlException ex)
+        public Task<bool> PerformRetryAsync(SqlException ex)
         {
-            // If this is not a sql exception cannot be a deadlock... so return false
-            if (ex == null) return false;
+            if (ex == null) return Task.FromResult(false);
 
-            // checks if the SqlException is a DeadLock error and if the current try is less than max retry
-            return SqlServerExceptions.IsThisADeadlock(ex) && ++tries < maxRetry;
+            // SqlException.Number 1205 = deadlock victim (see SqlServerExceptions.IsThisADeadlock)
+            bool shouldRetry = SqlServerExceptions.IsThisADeadlock(ex) && ++tries < maxRetry;
+            return Task.FromResult(shouldRetry);
         }
     }
 }

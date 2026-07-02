@@ -72,20 +72,22 @@ namespace bs.Data.Helpers
             }
         }
 
+        /// <summary>
+        /// Execute the statement in action wrapped by an ORM transaction asynchronously.
+        /// </summary>
+        /// <remarks>
+        /// This overload accepts a synchronous <see cref="Action"/> delegate. For async workloads use
+        /// <see cref="RunInTransactionAsync{T}(IUnitOfWork, Func{Task{T}}, int)"/> instead, which correctly
+        /// awaits the delegate and supports deadlock retry.
+        /// </remarks>
+        [Obsolete("Use RunInTransactionAsync(Func<Task<T>>, int) instead. This overload accepts a synchronous Action which cannot properly await async operations inside the delegate.")]
         public static async Task RunInTransactionAsync(this IUnitOfWork uow, Action action, int retry = 3)
         {
             if (uow is null)
-            {
                 throw new ORMException("Unit of work is not a valid instance, cannot run a new transaction");
-            }
+
             if (uow.Session is null)
-            {
                 throw new ORMException("Unit of work has not a valid session instance, cannot run a new transaction");
-            }
-            if (!uow.Session.IsConnected)
-            {
-                //uow.Session.Reconnect();
-            }
 
             while (true)
             {
@@ -95,16 +97,15 @@ namespace bs.Data.Helpers
                     {
                         action();
                         await transaction.CommitAsync();
-                        break; // stop looping
+                        break;
                     }
                     catch (SqlException sqlEx)
                     {
                         if (!transaction.WasRolledBack) await transaction.RollbackAsync();
 
                         // Try perform retry with exponential back off if this is a DeadLock exception
-                        if (RetryPolicies.ExponentialBackOff.RetryOnLivelockAndDeadlock(retry).PerformRetry(sqlEx)) continue;
+                        if (await RetryPolicies.ExponentialBackOff.RetryOnLivelockAndDeadlock(retry).PerformRetryAsync(sqlEx)) continue;
 
-                        // This was not a DeadLock exception so throw exception
                         throw new ORMException(sqlEx.Message, sqlEx, "SQL");
                     }
                     catch (ADOException AdoEx)
@@ -116,10 +117,6 @@ namespace bs.Data.Helpers
                     {
                         if (!transaction.WasRolledBack) await transaction.RollbackAsync();
                         throw new ORMException(ex.Message, ex, "GENERIC");
-                    }
-                    finally
-                    {
-                        //uow.Session.Disconnect();
                     }
                 }
             }
@@ -172,7 +169,7 @@ namespace bs.Data.Helpers
                         if (!transaction.WasRolledBack) await transaction.RollbackAsync();
 
                         // Try perform retry with exponential back off if this is a DeadLock exception
-                        if (RetryPolicies.ExponentialBackOff.RetryOnLivelockAndDeadlock(retry).PerformRetry(sqlEx)) continue;
+                        if (await RetryPolicies.ExponentialBackOff.RetryOnLivelockAndDeadlock(retry).PerformRetryAsync(sqlEx)) continue;
 
                         // This was not a DeadLock exception so throw exception
                         throw new ORMException(sqlEx.Message, sqlEx, "SQL");
