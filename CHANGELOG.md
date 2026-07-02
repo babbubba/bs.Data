@@ -4,6 +4,21 @@ All notable changes to bs.Data will be documented in this file.
 
 ---
 
+## [5.4.2] - 2026-07-02
+
+### Added
+
+- **`IUnitOfWork.FlushAndClear()` / `FlushAndClearAsync()`** — nuovi metodi per il pattern flush+clear di NHibernate. `FlushAsync()` invia i pending change al DB dentro la transazione corrente senza committare; `Clear()` svuota poi la first-level cache (identity map) liberando memoria. Utile nei processi batch per evitare la crescita illimitata della sessione:
+  ```csharp
+  for (int i = 0; i < rows.Count; i++)
+  {
+      await repo.CreateAsync(rows[i]);
+      if (i % 100 == 0) await uow.FlushAndClearAsync();
+  }
+  ```
+
+---
+
 ## [5.4.1] - 2026-07-02
 
 ### Dependencies

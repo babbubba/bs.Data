@@ -179,6 +179,28 @@ namespace bs.Data
             }
         }
 
+        /// <summary>
+        /// Flushes pending changes to the database (without committing) and clears the session
+        /// first-level cache. Use this in batch loops to avoid unbounded memory growth.
+        /// </summary>
+        public void FlushAndClear()
+        {
+            ThrowIfDisposed();
+            Session.Flush();
+            Session.Clear();
+        }
+
+        /// <summary>
+        /// Flushes pending changes to the database asynchronously (without committing) and clears
+        /// the session first-level cache. Use this in batch loops to avoid unbounded memory growth.
+        /// </summary>
+        public async Task FlushAndClearAsync()
+        {
+            ThrowIfDisposed();
+            await Session.FlushAsync();
+            Session.Clear();
+        }
+
         private void ThrowIfDisposed()
         {
             if (_disposed)

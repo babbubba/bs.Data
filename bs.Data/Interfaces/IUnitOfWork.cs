@@ -70,5 +70,41 @@ namespace bs.Data.Interfaces
         /// </summary>
         /// <returns></returns>
         Task TryCommitOrRollbackAsync();
+
+        /// <summary>
+        /// Flushes pending changes to the database (without committing) and clears the session
+        /// first-level cache. Use this in batch loops to avoid unbounded memory growth.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="ISession.Flush"/> pushes pending SQL to the DB within the current transaction.
+        /// <see cref="ISession.Clear"/> then evicts all entities from the identity map, freeing memory.
+        /// Call periodically inside large batch operations:
+        /// <code>
+        /// for (int i = 0; i &lt; rows.Count; i++)
+        /// {
+        ///     await repo.CreateAsync(rows[i]);
+        ///     if (i % 100 == 0) uow.FlushAndClear();
+        /// }
+        /// </code>
+        /// </remarks>
+        void FlushAndClear();
+
+        /// <summary>
+        /// Flushes pending changes to the database asynchronously (without committing) and clears
+        /// the session first-level cache. Use this in batch loops to avoid unbounded memory growth.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="ISession.FlushAsync"/> pushes pending SQL to the DB within the current transaction.
+        /// <see cref="ISession.Clear"/> then evicts all entities from the identity map, freeing memory.
+        /// Call periodically inside large batch operations:
+        /// <code>
+        /// for (int i = 0; i &lt; rows.Count; i++)
+        /// {
+        ///     await repo.CreateAsync(rows[i]);
+        ///     if (i % 100 == 0) await uow.FlushAndClearAsync();
+        /// }
+        /// </code>
+        /// </remarks>
+        Task FlushAndClearAsync();
     }
 }
