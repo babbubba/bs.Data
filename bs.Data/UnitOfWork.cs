@@ -148,9 +148,16 @@ namespace bs.Data
 
             try
             {
+                // A transaction still active at Dispose() time means the caller's own commit/
+                // rollback logic never ran - typically an unhandled exception, or a return path
+                // that skipped it. Roll back rather than trying to commit whatever was pending, so
+                // an abandoned unit of work never silently persists partial/incomplete work. This
+                // matches how a bare NHibernate ITransaction (and most ADO.NET/ORM transaction
+                // types) already behave when disposed without an explicit Commit().
                 if (_transaction?.IsActive == true)
                 {
-                    TryCommitOrRollback();
+                    Rollback();
+                    CloseTransaction();
                 }
             }
             finally
@@ -168,7 +175,8 @@ namespace bs.Data
             {
                 if (_transaction?.IsActive == true)
                 {
-                    await TryCommitOrRollbackAsync();
+                    await RollbackAsync();
+                    CloseTransaction();
                 }
             }
             finally

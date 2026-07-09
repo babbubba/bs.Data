@@ -16,8 +16,21 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: '8.0.x'
+        dotnet-version: |
+          8.0.x
+          9.0.x
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
+    - name: Test
+      # Integration tests spin up ephemeral SQL Server / PostgreSQL containers via
+      # Testcontainers; ubuntu-latest runners already have a Docker daemon available, no
+      # extra service containers or external database need to be provisioned here.
+      run: dotnet test --no-restore --logger "console;verbosity=normal" --logger "trx" --results-directory ./TestResults
+    - name: Publish test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: ./TestResults

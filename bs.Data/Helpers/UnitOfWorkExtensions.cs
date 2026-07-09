@@ -12,6 +12,58 @@ namespace bs.Data.Helpers
     public static partial class UnitOfWorkExtensions
     {
         /// <summary>
+        /// Walks the exception chain looking for a <see cref="SqlException"/>.
+        /// </summary>
+        /// <remarks>
+        /// NHibernate typically wraps raw ADO.NET provider exceptions (including a SQL Server
+        /// <see cref="SqlException"/>) in its own <see cref="ADOException"/> hierarchy
+        /// (<c>GenericADOException</c>) before they reach calling code. A deadlock can therefore
+        /// arrive here as an <see cref="ADOException"/> whose <see cref="Exception.InnerException"/>
+        /// (or a deeper ancestor) is the real <see cref="SqlException"/>. Without unwrapping it,
+        /// deadlock detection/retry would only ever trigger for a bare <see cref="SqlException"/>
+        /// thrown directly (uncommon), silently never firing for the far more common case of a
+        /// deadlock raised while flushing (e.g. during <c>Session.SaveAsync</c>/<c>UpdateAsync</c>).
+        /// </remarks>
+        private static SqlException FindSqlException(Exception ex)
+        {
+            while (ex != null)
+            {
+                if (ex is SqlException sqlEx) return sqlEx;
+                ex = ex.InnerException;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Rolls back the transaction, tolerating the case where the server already aborted it
+        /// on its own.
+        /// </summary>
+        /// <remarks>
+        /// When SQL Server kills a transaction to resolve a deadlock, the connection is left in a
+        /// "zombied" state on the client: <see cref="ITransaction.WasRolledBack"/> is still
+        /// <c>false</c> (no one called <c>Rollback</c> from here), yet issuing a
+        /// <see cref="ITransaction.RollbackAsync"/> against it throws a
+        /// <see cref="TransactionException"/> ("Transaction not connected, or was disconnected").
+        /// That exception would otherwise escape from inside the catch block that is trying to
+        /// evaluate the deadlock for a retry, since a sibling catch clause never catches an
+        /// exception raised by another catch clause in the same try. There is nothing left to
+        /// roll back in that case, so it is safe to swallow it and let the deadlock retry policy
+        /// decide what happens next.
+        /// </remarks>
+        private static async Task SafeRollbackAsync(ITransaction transaction)
+        {
+            if (transaction.WasRolledBack) return;
+
+            try
+            {
+                await transaction.RollbackAsync();
+            }
+            catch (TransactionException)
+            {
+            }
+        }
+
+        /// <summary>
         /// Execute the statement in action wrapped by an ORM transaction. It commit (and in case of exception rollback) when action finish. After it close and destroy the transaction.
         /// </summary>
         /// <param name="uow">The uow.</param>
@@ -24,10 +76,25 @@ namespace bs.Data.Helpers
                 action();
                 if (uow.TransactionIsNotNull) uow.Commit();
             }
+            catch (SqlException sqlEx)
+            {
+                if (uow.TransactionIsNotNull) uow.Rollback();
+                throw new ORMException(sqlEx.Message, sqlEx, "SQL");
+            }
+            catch (ADOException adoEx)
+            {
+                if (uow.TransactionIsNotNull) uow.Rollback();
+
+                var wrappedSqlEx = FindSqlException(adoEx);
+                if (wrappedSqlEx != null)
+                    throw new ORMException(wrappedSqlEx.Message, wrappedSqlEx, "SQL");
+
+                throw new ORMException(adoEx.Message, adoEx, "ADO");
+            }
             catch (Exception ex)
             {
                 if (uow.TransactionIsNotNull) uow.Rollback();
-                throw new ORMException(ex.GetBaseException().Message, ex);
+                throw new ORMException(ex.GetBaseException().Message, ex, "GENERIC");
             }
             finally
             {
@@ -59,6 +126,11 @@ namespace bs.Data.Helpers
             catch (ADOException AdoEx)
             {
                 if (uow.TransactionIsNotNull) uow.Rollback();
+
+                var wrappedSqlEx = FindSqlException(AdoEx);
+                if (wrappedSqlEx != null)
+                    throw new ORMException(wrappedSqlEx.Message, wrappedSqlEx, "SQL");
+
                 throw new ORMException(AdoEx.Message, AdoEx, "ADO");
             }
             catch (Exception ex)
@@ -89,6 +161,12 @@ namespace bs.Data.Helpers
             if (uow.Session is null)
                 throw new ORMException("Unit of work has not a valid session instance, cannot run a new transaction");
 
+            // Built once per call, before the retry loop: the retry counter and the exponential
+            // back-off interval are mutable state that must persist across retries of THIS
+            // transaction and must never be shared with concurrent/unrelated calls (see
+            // RetryPolicies.CreateExponentialBackOff for why a shared/singleton instance is unsafe).
+            var deadlockRetryPolicy = RetryPolicies.CreateExponentialBackOff().RetryOnLivelockAndDeadlock(retry);
+
             while (true)
             {
                 using (var transaction = uow.Session.BeginTransaction())
@@ -101,21 +179,38 @@ namespace bs.Data.Helpers
                     }
                     catch (SqlException sqlEx)
                     {
-                        if (!transaction.WasRolledBack) await transaction.RollbackAsync();
+                        await SafeRollbackAsync(transaction);
 
                         // Try perform retry with exponential back off if this is a DeadLock exception
-                        if (await RetryPolicies.ExponentialBackOff.RetryOnLivelockAndDeadlock(retry).PerformRetryAsync(sqlEx)) continue;
+                        if (await deadlockRetryPolicy.PerformRetryAsync(sqlEx))
+                        {
+                            // The session's first-level cache may still hold entities loaded/modified
+                            // during the rolled-back attempt. Without clearing it, the retry would see
+                            // stale, still-dirty in-memory state instead of re-reading from the database,
+                            // risking double-applied changes or a StaleObjectStateException.
+                            uow.Session.Clear();
+                            continue;
+                        }
 
                         throw new ORMException(sqlEx.Message, sqlEx, "SQL");
                     }
                     catch (ADOException AdoEx)
                     {
-                        if (!transaction.WasRolledBack) await transaction.RollbackAsync();
+                        await SafeRollbackAsync(transaction);
+
+                        var wrappedSqlEx = FindSqlException(AdoEx);
+                        if (wrappedSqlEx != null && await deadlockRetryPolicy.PerformRetryAsync(wrappedSqlEx))
+                        {
+                            uow.Session.Clear();
+                            continue;
+                        }
+                        if (wrappedSqlEx != null) throw new ORMException(wrappedSqlEx.Message, wrappedSqlEx, "SQL");
+
                         throw new ORMException(AdoEx.Message, AdoEx, "ADO");
                     }
                     catch (Exception ex)
                     {
-                        if (!transaction.WasRolledBack) await transaction.RollbackAsync();
+                        await SafeRollbackAsync(transaction);
                         throw new ORMException(ex.Message, ex, "GENERIC");
                     }
                 }
@@ -154,6 +249,12 @@ namespace bs.Data.Helpers
                 throw new ORMException("Unit of work has not a valid session instance, cannot run a new transaction");
             }
 
+            // Built once per call, before the retry loop: the retry counter and the exponential
+            // back-off interval are mutable state that must persist across retries of THIS
+            // transaction and must never be shared with concurrent/unrelated calls (see
+            // RetryPolicies.CreateExponentialBackOff for why a shared/singleton instance is unsafe).
+            var deadlockRetryPolicy = RetryPolicies.CreateExponentialBackOff().RetryOnLivelockAndDeadlock(retry);
+
             while (true)
             {
                 using (var transaction = uow.Session.BeginTransaction())
@@ -166,22 +267,42 @@ namespace bs.Data.Helpers
                     }
                     catch (SqlException sqlEx)
                     {
-                        if (!transaction.WasRolledBack) await transaction.RollbackAsync();
+                        await SafeRollbackAsync(transaction);
 
                         // Try perform retry with exponential back off if this is a DeadLock exception
-                        if (await RetryPolicies.ExponentialBackOff.RetryOnLivelockAndDeadlock(retry).PerformRetryAsync(sqlEx)) continue;
+                        if (await deadlockRetryPolicy.PerformRetryAsync(sqlEx))
+                        {
+                            // The session's first-level cache may still hold entities loaded/modified
+                            // during the rolled-back attempt. Without clearing it, the retry would see
+                            // stale, still-dirty in-memory state instead of re-reading from the database,
+                            // risking double-applied changes or a StaleObjectStateException.
+                            uow.Session.Clear();
+                            continue;
+                        }
 
                         // This was not a DeadLock exception so throw exception
                         throw new ORMException(sqlEx.Message, sqlEx, "SQL");
                     }
                     catch (ADOException AdoEx)
                     {
-                        if (!transaction.WasRolledBack) await transaction.RollbackAsync();
+                        await SafeRollbackAsync(transaction);
+
+                        // NHibernate often wraps a deadlocking SqlException inside a GenericADOException
+                        // (an ADOException) rather than letting it surface directly - unwrap it so the
+                        // retry logic above still engages instead of failing immediately.
+                        var wrappedSqlEx = FindSqlException(AdoEx);
+                        if (wrappedSqlEx != null && await deadlockRetryPolicy.PerformRetryAsync(wrappedSqlEx))
+                        {
+                            uow.Session.Clear();
+                            continue;
+                        }
+                        if (wrappedSqlEx != null) throw new ORMException(wrappedSqlEx.Message, wrappedSqlEx, "SQL");
+
                         throw new ORMException(AdoEx.Message, AdoEx, "ADO");
                     }
                     catch (Exception ex)
                     {
-                        if (!transaction.WasRolledBack) await transaction.RollbackAsync();
+                        await SafeRollbackAsync(transaction);
                         throw new ORMException(ex.GetBaseException().Message, ex, "GENERIC");
                     }
                 }

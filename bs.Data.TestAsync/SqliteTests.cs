@@ -8,14 +8,14 @@ using Xunit;
 
 namespace bs.Data.TestAsync
 {
-    [Collection(PostgresCollection.Name)]
-    public class PostgresTests
+    [Collection(SqliteCollection.Name)]
+    public class SqliteTests
     {
-        private readonly PostgresFixture _fixture;
+        private readonly SqliteFixture _fixture;
         private readonly BsDataRepository _repo;
         private readonly IUnitOfWork _uow;
 
-        public PostgresTests(PostgresFixture fixture)
+        public SqliteTests(SqliteFixture fixture)
         {
             _fixture = fixture;
             _repo = fixture.Repository;
@@ -23,7 +23,7 @@ namespace bs.Data.TestAsync
         }
 
         [Fact]
-        public async Task Test_PostgreSqlAsync()
+        public async Task Test_SqliteAsync()
         {
             _uow.BeginTransaction();
             var country = new CountryModel
